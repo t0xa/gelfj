@@ -13,19 +13,17 @@ Examples
 
 To send a GELF message:
    
-    GelfMessage message = new GelfMessage("Short message", "Long message", new Date().getTime()/1000L, "1");
-    GelfSender gelfSender = new GelfSender("localhost", 12201);
+    GelfMessage message = new GelfMessage("Short message", "Long message", new Date(), "1");
+    GelfSender gelfSender = new GelfSender("localhost");
     if (message.isValid()) {
        gelfSender.sendMessage(message)
     }
 
 To send a GELF message with additional fields:
    
-    GelfMessage message = new GelfMessage("Short message", "Long message", new Date().getTime()/1000L, "1");
-    Map<String,Object> additonalFields = message.getAdditonalFields();
-    additonalFields.put("cat", "LOLCAT");
-    additonalFields.put("quote", "Can I haz cheezburger?");
-    GelfSender gelfSender = new GelfSender("localhost", 12201);
+    GelfMessage message = new GelfMessage("Short message", "Long message", new Date(), "1");
+    message.addField("id", "LOLCAT").addField("_id", "typos in my closet");
+    GelfSender gelfSender = new GelfSender("localhost");
     if (message.isValid()) {
        gelfSender.sendMessage(message)
     }
@@ -62,4 +60,4 @@ The Graylog Extended Log Format (GELF) avoids the shortcomings of classic plain 
 - Not much space for payloads like backtraces
 - Unstructured. You can only build a long message string and define priority, severity etc.
 
-You can get more information http://www.graylog2.org/about/gelf
+You can get more information here: [http://www.graylog2.org/about/gelf](http://www.graylog2.org/about/gelf)

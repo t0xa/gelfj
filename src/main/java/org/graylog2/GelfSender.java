@@ -10,6 +10,10 @@ public class GelfSender {
     private int port;
     private DatagramSocket socket;
 
+    public GelfSender(String host) throws UnknownHostException, SocketException {
+        this(host, 12201);
+    }
+
     public GelfSender(String host, int port) throws UnknownHostException, SocketException {
         this.host = InetAddress.getByName(host);
         this.port = port;

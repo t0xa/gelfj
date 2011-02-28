@@ -30,6 +30,14 @@ public class GelfMessage {
     public GelfMessage() {
     }
 
+    public GelfMessage(String shortMessage, String fullMessage, Date timestamp, String level) {
+        this.shortMessage = shortMessage;
+        this.fullMessage = fullMessage;
+        this.timestamp = timestamp.getTime()/1000L;
+        this.level = level;
+        getHostname();
+    }
+
     public GelfMessage(String shortMessage, String fullMessage, Long timestamp, String level) {
         this.shortMessage = shortMessage;
         this.fullMessage = fullMessage;
@@ -191,6 +199,11 @@ public class GelfMessage {
 
     public void setFile(String file) {
         this.file = file;
+    }
+
+    public GelfMessage addField(String key, String value) {
+        getAdditonalFields().put(key, value);
+        return this;
     }
 
     public Map<String, Object> getAdditonalFields() {

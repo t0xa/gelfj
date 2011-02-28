@@ -15,10 +15,8 @@ public class GelfMessageTest {
 
     @Test
     public void testAdditionalFieldsIds() throws Exception {
-        GelfMessage message = new GelfMessage("Short", "Long", new Date().getTime()/1000L, "1");
-        Map<String,Object> additonalFields = message.getAdditonalFields();
-        additonalFields.put("id", "LOLCAT");
-        additonalFields.put("_id", "typos in my closet");
+        GelfMessage message = new GelfMessage("Short", "Long", new Date(), "1");
+        message.addField("id", "LOLCAT").addField("_id", "typos in my closet");
 
         String data = message.toJson();
         Map resultingMap = (Map) JSONValue.parse(data);
@@ -32,15 +30,14 @@ public class GelfMessageTest {
         for(int i =0; i < 15; i++) {
             longString += longString;
         }
-        System.out.println(longString.length());
-        GelfMessage message = new GelfMessage("Long", longString , new Date().getTime()/1000L, "1");
+        GelfMessage message = new GelfMessage("Long", longString , new Date(), "1");
         List<byte[]> bytes2 = message.toDatagrams();
         assertEquals(2, bytes2.size());
     }
 
     @Test
     public void testSimpleMessage() throws Exception {
-        GelfMessage message = new GelfMessage("Short", "Long", new Date().getTime()/1000L, "1");
+        GelfMessage message = new GelfMessage("Short", "Long", new Date(), "1");
         List<byte[]> bytes = message.toDatagrams();
         assertEquals(1, bytes.size());
     }
