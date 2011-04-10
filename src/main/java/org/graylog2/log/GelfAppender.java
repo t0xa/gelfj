@@ -1,6 +1,7 @@
 package org.graylog2.log;
 
 import org.apache.log4j.AppenderSkeleton;
+import org.apache.log4j.Layout;
 import org.apache.log4j.Level;
 import org.apache.log4j.spi.ErrorCode;
 import org.apache.log4j.spi.LocationInfo;
@@ -11,6 +12,7 @@ import org.graylog2.GelfSender;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
@@ -63,8 +65,10 @@ public class GelfAppender extends AppenderSkeleton {
 
     @Override
     protected void append(LoggingEvent event) {
+
+        long timeStamp = getTimestamp(event);
+
         Level level = event.getLevel();
-        long timeStamp = event.getTimeStamp();
 
         LocationInfo locationInformation = event.getLocationInformation();
         String file = locationInformation.getFileName();
@@ -86,6 +90,11 @@ public class GelfAppender extends AppenderSkeleton {
         }
         GelfMessage gelfMessage = new GelfMessage(shortMessage, renderedMessage, timeStamp, level.getSyslogEquivalent() + "", lineNumber, file);
         gelfSender.sendMessage(gelfMessage);
+    }
+
+    private long getTimestamp(LoggingEvent event)  {
+        Log4jVersionChecker log4jVersionChecker = new Log4jVersionChecker(event);
+        return log4jVersionChecker.getTimeStamp();
     }
 
     private String extractStacktrace(ThrowableInformation throwableInformation) {

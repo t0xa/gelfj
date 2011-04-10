@@ -1,7 +1,7 @@
 apply plugin: 'java'
 
-sourceCompatibility = 1.6
-version = '0.1'
+sourceCompatibility = 1.5
+version = '0.3'
 jar {
   manifest {
     attributes 'Implementation-Title': 'GELF Java Implementation', 'Implementation-Version': version
@@ -13,8 +13,8 @@ repositories {
 }
 
 dependencies {
-  testCompile 'junit:junit:4.7'
-  compile "log4j:log4j:1.2.16@jar"
+  compile 'junit:junit:4.7'
+  compile "log4j:log4j:1.2.7@jar"
 }
 
 task libDir(dependsOn: configurations.runtime.buildArtifacts, type: Copy) {
