@@ -52,14 +52,14 @@ and then add it as a one of appenders:
 
 Or, in the log4j.properties format:
 
-  # Define the graylog2 destination
-  log4j.appender.graylog2=org.graylog2.log.GelfAppender
-  log4j.appender.graylog2.graylogHost=graylog2.example.com
-  log4j.appender.graylog2.layout=org.apache.log4j.PatternLayout
-  log4j.appender.graylog2.layout.ConversionPattern=%d |%t|%c{2}| %-5p - %m%n
+    # Define the graylog2 destination
+    log4j.appender.graylog2=org.graylog2.log.GelfAppender
+    log4j.appender.graylog2.graylogHost=graylog2.example.com
+    log4j.appender.graylog2.layout=org.apache.log4j.PatternLayout
+    log4j.appender.graylog2.layout.ConversionPattern=%d |%t|%c{2}| %-5p - %m%n
 
-  # Send all INFO logs to graylog2
-  log4j.rootLogger=INFO, graylog2
+    # Send all INFO logs to graylog2
+    log4j.rootLogger=INFO, graylog2
 
   
 What is GELF
