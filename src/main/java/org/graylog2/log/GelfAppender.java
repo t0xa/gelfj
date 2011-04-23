@@ -9,12 +9,17 @@ import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.ThrowableInformation;
 import org.graylog2.GelfMessage;
 import org.graylog2.GelfSender;
+import org.json.simple.JSONValue;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * anton @ 11.30.1 17:28
@@ -25,8 +30,13 @@ public class GelfAppender extends AppenderSkeleton {
     private int graylogPort = 12201;
     private GelfSender gelfSender;
     private boolean extractStacktrace;
+    private Map<String, String> fields;
 
     private static final int MAX_SHORT_MESSAGE_LENGTH = 250;
+
+    public void setAdditionalFields(String additionalFields) {
+         fields = (HashMap) JSONValue.parse(additionalFields.replaceAll("'", "\""));
+    }
 
     public int getGraylogPort() {
         return graylogPort;
@@ -89,6 +99,11 @@ public class GelfAppender extends AppenderSkeleton {
             }
         }
         GelfMessage gelfMessage = new GelfMessage(shortMessage, renderedMessage, timeStamp, level.getSyslogEquivalent() + "", lineNumber, file);
+        if (fields != null && !fields.isEmpty()) {
+            for(String key : fields.keySet()) {
+                gelfMessage.addField(key, fields.get(key));
+            }
+        }
         gelfSender.sendMessage(gelfMessage);
     }
 
