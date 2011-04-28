@@ -27,12 +27,14 @@ import java.util.Map;
 public class GelfAppender extends AppenderSkeleton {
 
     private String graylogHost;
+    private String originHost;
     private int graylogPort = 12201;
     private GelfSender gelfSender;
     private boolean extractStacktrace;
     private Map<String, String> fields;
 
     private static final int MAX_SHORT_MESSAGE_LENGTH = 250;
+    private final String ORIGIN_HOST_KEY = "originHost";
 
     public void setAdditionalFields(String additionalFields) {
          fields = (HashMap) JSONValue.parse(additionalFields.replaceAll("'", "\""));
@@ -60,6 +62,14 @@ public class GelfAppender extends AppenderSkeleton {
 
     public void setExtractStacktrace(boolean extractStacktrace) {
         this.extractStacktrace = extractStacktrace;
+    }
+
+    public String getOriginHost() {
+        return originHost;
+    }
+
+    public void setOriginHost(String originHost) {
+        this.originHost = originHost;
     }
 
     @Override
@@ -99,7 +109,18 @@ public class GelfAppender extends AppenderSkeleton {
             }
         }
         GelfMessage gelfMessage = new GelfMessage(shortMessage, renderedMessage, timeStamp, level.getSyslogEquivalent() + "", lineNumber, file);
+
+        if (getOriginHost() != null) {
+            gelfMessage.setHost(getOriginHost());
+        }
+
         if (fields != null && !fields.isEmpty()) {
+
+            if (fields.containsKey(ORIGIN_HOST_KEY) && gelfMessage.getHost() == null) {
+                gelfMessage.setHost(fields.get(ORIGIN_HOST_KEY));
+                fields.remove(ORIGIN_HOST_KEY);
+            }
+
             for(String key : fields.keySet()) {
                 gelfMessage.addField(key, fields.get(key));
             }

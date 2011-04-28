@@ -33,9 +33,8 @@ public class GelfMessage {
     public GelfMessage(String shortMessage, String fullMessage, Date timestamp, String level) {
         this.shortMessage = shortMessage;
         this.fullMessage = fullMessage;
-        this.timestamp = timestamp.getTime()/1000L;
+        this.timestamp = timestamp.getTime() / 1000L;
         this.level = level;
-        getHostname();
     }
 
     public GelfMessage(String shortMessage, String fullMessage, Long timestamp, String level) {
@@ -43,7 +42,6 @@ public class GelfMessage {
         this.fullMessage = fullMessage;
         this.timestamp = timestamp;
         this.level = level;
-        getHostname();
     }
 
     public GelfMessage(String shortMessage, String fullMessage, Long timestamp, String level, String line, String file) {
@@ -53,11 +51,18 @@ public class GelfMessage {
         this.level = level;
         this.line = line;
         this.file = file;
-        getHostname();
     }
 
     public String toJson() {
         HashMap<String, Object> map = new HashMap<String, Object>();
+
+        if (getHost() == null) {
+            try {
+                this.host = InetAddress.getLocalHost().getHostAddress();
+            } catch (UnknownHostException e) {
+                // TODO: correctly handle this situation
+            }
+        }
 
         map.put("version", getVersion());
         map.put("host", getHost());
@@ -119,15 +124,6 @@ public class GelfMessage {
             return null;
         }
     }
-
-    private void getHostname() {
-        try {
-            this.host = InetAddress.getLocalHost().getHostAddress();
-        } catch (UnknownHostException e) {
-            // TODO: correctly handle this situation
-        }
-    }
-
 
     public String getVersion() {
         return version;

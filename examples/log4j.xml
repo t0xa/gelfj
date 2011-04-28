@@ -11,6 +11,7 @@
 
     <appender name="graylog" class="org.graylog2.log.GelfAppender">
         <param name="graylogHost" value="192.168.0.201"/>
+        <param name="originHost" value="my.machine.example.com"/>
         <param name="additionalFields" value="{'environment': 'DEV', 'application': 'MyAPP'}"/>
         <param name="Facility" value="USER"/>
         <param name="FacilityPrinting" value="true"/>
