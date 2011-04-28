@@ -37,6 +37,7 @@ To use GELF Facility as appender in Log4J (XML format):
 
     <appender name="graylog" class="org.graylog2.log.GelfAppender">
         <param name="graylogHost" value="192.168.0.201"/>
+        <param name="originHost" value="my.machine.example.com"/>
         <param name="Threshold" value="INFO"/>
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d |%t|%c{2}| %-5p - %m%n"/>
@@ -55,6 +56,7 @@ Or, in the log4j.properties format:
     # Define the graylog2 destination
     log4j.appender.graylog2=org.graylog2.log.GelfAppender
     log4j.appender.graylog2.graylogHost=graylog2.example.com
+    log4j.appender.graylog2.originHost=my.machine.example.com
     log4j.appender.graylog2.layout=org.apache.log4j.PatternLayout
     log4j.appender.graylog2.layout.ConversionPattern=%d |%t|%c{2}| %-5p - %m%n
 
