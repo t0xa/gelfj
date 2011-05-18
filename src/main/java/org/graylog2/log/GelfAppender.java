@@ -158,8 +158,7 @@ public class GelfAppender extends AppenderSkeleton {
     }
 
     private long getTimestamp(LoggingEvent event)  {
-        Log4jVersionChecker log4jVersionChecker = new Log4jVersionChecker(event);
-        return log4jVersionChecker.getTimeStamp();
+        return Log4jVersionChecker.getTimeStamp(event);
     }
 
     private String extractStacktrace(ThrowableInformation throwableInformation) {
