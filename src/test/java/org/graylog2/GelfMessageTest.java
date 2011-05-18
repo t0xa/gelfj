@@ -42,14 +42,4 @@ public class GelfMessageTest {
         List<byte[]> bytes = message.toDatagrams();
         assertEquals(1, bytes.size());
     }
-
-    @Test
-    public void testSimpleMessageValid() throws Exception {
-        // Issue #5
-        GelfMessage message = new GelfMessage("Short", "Long", new Date(), "1");
-        assertTrue(message.isValid());
-
-        String hostAddress = InetAddress.getLocalHost().getHostAddress();
-        assertEquals(hostAddress, message.getHost());
-    }
 }

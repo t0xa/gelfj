@@ -8,3 +8,4 @@ lib/*
 build/**/*
 build/*
 *.iml
+target/**

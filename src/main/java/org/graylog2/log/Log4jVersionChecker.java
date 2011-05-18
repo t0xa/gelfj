@@ -10,25 +10,39 @@ import java.lang.reflect.Method;
  */
 public class Log4jVersionChecker {
 
-    private final LoggingEvent event;
+    private static boolean hasGetTimeStamp = true;
+    private static Method methodGetTimeStamp = null;
 
-    public Log4jVersionChecker(LoggingEvent event) {
-        this.event = event;
-    }
+    public static long getTimeStamp(LoggingEvent event) {
 
-    public long getTimeStamp() {
-        Method[] declaredMethods = event.getClass().getDeclaredMethods();
-        for(Method m : declaredMethods) {
-            if (m.getName().equals("getTimeStamp")) {
-                try {
-                    m.invoke(event);
-                } catch (IllegalAccessException e) {
-                    return 0;
-                } catch (InvocationTargetException e) {
-                    return 0;
+        long timeStamp = System.currentTimeMillis();
+
+        if(hasGetTimeStamp && methodGetTimeStamp == null) {
+
+            hasGetTimeStamp = false;
+
+            Method[] declaredMethods = event.getClass().getDeclaredMethods();
+            for(Method m : declaredMethods) {
+                if (m.getName().equals("getTimeStamp")) {
+                    methodGetTimeStamp = m;
+                    hasGetTimeStamp = true;
+
+                    break;
                 }
             }
         }
-        return System.currentTimeMillis();
+
+        if(hasGetTimeStamp) {
+
+            try {
+                timeStamp = (Long) methodGetTimeStamp.invoke(event);
+            } catch (IllegalAccessException e) {
+                // Just return the current timestamp
+            } catch (InvocationTargetException e) {
+                // Just return the current timestamp
+            }
+        }
+
+        return timeStamp;
     }
 }
