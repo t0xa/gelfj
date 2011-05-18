@@ -4,6 +4,7 @@ import org.json.simple.JSONValue;
 import org.json.simple.parser.JSONParser;
 import org.junit.Test;
 
+import java.net.InetAddress;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -40,5 +41,15 @@ public class GelfMessageTest {
         GelfMessage message = new GelfMessage("Short", "Long", new Date(), "1");
         List<byte[]> bytes = message.toDatagrams();
         assertEquals(1, bytes.size());
+    }
+
+    @Test
+    public void testSimpleMessageValid() throws Exception {
+        // Issue #5
+        GelfMessage message = new GelfMessage("Short", "Long", new Date(), "1");
+        assertTrue(message.isValid());
+
+        String hostAddress = InetAddress.getLocalHost().getHostAddress();
+        assertEquals(hostAddress, message.getHost());
     }
 }

@@ -56,14 +56,6 @@ public class GelfMessage {
     public String toJson() {
         HashMap<String, Object> map = new HashMap<String, Object>();
 
-        if (getHost() == null) {
-            try {
-                this.host = InetAddress.getLocalHost().getHostAddress();
-            } catch (UnknownHostException e) {
-                // TODO: correctly handle this situation
-            }
-        }
-
         map.put("version", getVersion());
         map.put("host", getHost());
         map.put("short_message", getShortMessage());
@@ -134,8 +126,20 @@ public class GelfMessage {
     }
 
     public String getHost() {
+        if (host == null) {
+            return getFallbackHostname();
+        }
         return host;
     }
+
+    private String getFallbackHostname() {
+        try {
+            return InetAddress.getLocalHost().getHostAddress();
+        } catch (UnknownHostException e) {
+            return "127.0.0.1";
+        }
+    }
+
 
     public void setHost(String host) {
         this.host = host;
@@ -217,8 +221,7 @@ public class GelfMessage {
     public boolean isEmpty(String str) {
         if (str == null) return true;
         if ("".equals(str)) return true;
-        if ("".equals(str.trim())) return true;
-        return false;
+        return "".equals(str.trim());
     }
 
     public byte[] concatByteArray(byte[] first, byte[] second) {
