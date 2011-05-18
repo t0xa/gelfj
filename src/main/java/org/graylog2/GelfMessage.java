@@ -208,7 +208,7 @@ public class GelfMessage {
     }
 
     public boolean isEmpty(String str) {
-        return str == null || "".equals(str) || "".equals(str.trim());
+        return str == null || "".equals(str.trim());
     }
 
     public byte[] concatByteArray(byte[] first, byte[] second) {
