@@ -1,7 +1,7 @@
 apply plugin: 'java'
 
 sourceCompatibility = 1.5
-version = '0.5'
+version = '0.7'
 jar {
   manifest {
     attributes 'Implementation-Title': 'GELF Java Implementation', 'Implementation-Version': version
