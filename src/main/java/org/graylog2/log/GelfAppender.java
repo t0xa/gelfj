@@ -25,6 +25,7 @@ public class GelfAppender extends AppenderSkeleton {
     private String graylogHost;
     private String originHost;
     private int graylogPort = 12201;
+    private String facility;
     private GelfSender gelfSender;
     private boolean extractStacktrace;
     private Map<String, String> fields;
@@ -44,7 +45,7 @@ public class GelfAppender extends AppenderSkeleton {
         String hostName = null;
 
         try {
-            hostName = InetAddress.getLocalHost().getHostAddress();
+            hostName = InetAddress.getLocalHost().getHostName();
         } catch (UnknownHostException e) {
             errorHandler.error("Unknown local hostname", e, ErrorCode.GENERIC_FAILURE);
         }
@@ -70,6 +71,14 @@ public class GelfAppender extends AppenderSkeleton {
 
     public void setGraylogHost(String graylogHost) {
         this.graylogHost = graylogHost;
+    }
+
+    public String getFacility() {
+        return facility;
+    }
+
+    public void setFacility(String facility) {
+        this.facility = facility;
     }
 
     public boolean isExtractStacktrace() {
@@ -128,6 +137,10 @@ public class GelfAppender extends AppenderSkeleton {
 
         if (getOriginHost() != null) {
             gelfMessage.setHost(getOriginHost());
+        }
+
+        if (getFacility() != null) {
+            gelfMessage.setFacility(getFacility());
         }
 
         if (fields != null && !fields.isEmpty()) {
