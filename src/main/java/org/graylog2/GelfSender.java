@@ -6,12 +6,14 @@ import java.util.List;
 
 public class GelfSender {
 
+    private static final int DEFAULT_PORT = 12201;
+
     private InetAddress host;
     private int port;
     private DatagramSocket socket;
 
     public GelfSender(String host) throws UnknownHostException, SocketException {
-        this(host, 12201);
+        this(host, DEFAULT_PORT);
     }
 
     public GelfSender(String host, int port) throws UnknownHostException, SocketException {
@@ -39,8 +41,7 @@ public class GelfSender {
     }
 
     public boolean sendMessage(GelfMessage message) {
-        if (!message.isValid()) return false;
-        return sendDatagrams(message.toDatagrams());
+        return message.isValid() && sendDatagrams(message.toDatagrams());
     }
 
     public boolean sendDatagrams(List<byte[]> bytesList) {

@@ -15,6 +15,8 @@ public class GelfMessage {
     public static final String GELF_VERSION = "1.0";
     public static final byte[] GELF_CHUNKED_ID = new byte[]{0x1e, 0x0f};
 
+    private static final String ID_NAME = "id";
+
     private String version = GELF_VERSION;
     private String host;
     private String shortMessage;
@@ -25,7 +27,6 @@ public class GelfMessage {
     private String line;
     private String file;
     private Map<String, Object> additonalFields = new HashMap<String, Object>();
-    private final String ID_NAME = "id";
 
     public GelfMessage() {
     }
@@ -54,15 +55,7 @@ public class GelfMessage {
     }
 
     public String toJson() {
-        HashMap<String, Object> map = new HashMap<String, Object>();
-
-        if (getHost() == null) {
-            try {
-                this.host = InetAddress.getLocalHost().getHostAddress();
-            } catch (UnknownHostException e) {
-                // TODO: correctly handle this situation
-            }
-        }
+        Map<String, Object> map = new HashMap<String, Object>();
 
         map.put("version", getVersion());
         map.put("host", getHost());
@@ -215,10 +208,7 @@ public class GelfMessage {
     }
 
     public boolean isEmpty(String str) {
-        if (str == null) return true;
-        if ("".equals(str)) return true;
-        if ("".equals(str.trim())) return true;
-        return false;
+        return str == null || "".equals(str) || "".equals(str.trim());
     }
 
     public byte[] concatByteArray(byte[] first, byte[] second) {
