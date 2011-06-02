@@ -5,28 +5,31 @@ import org.apache.log4j.Priority;
 import org.apache.log4j.spi.LoggingEvent;
 import org.graylog2.GelfMessage;
 import org.graylog2.GelfSender;
-import org.hamcrest.CoreMatchers;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 /**
  * (c) Copyright: Anton Yakimov
+ *
+ *
  */
 public class GelfAppenderTest {
 
-    @Test
-    public void ensureHostnameForMessage() throws UnknownHostException, SocketException {
+    private TestGelfSender gelfSender;
+    private GelfAppender gelfAppender;
 
-        final TestGelfSender gelfSender = new TestGelfSender("localhost");
+    @Before
+    public void setUp() throws UnknownHostException, SocketException {
+        gelfSender = new TestGelfSender("localhost");
 
-        GelfAppender gelfAppender = new GelfAppender() {
+        gelfAppender = new GelfAppender() {
 
             @Override
             public GelfSender getGelfSender() {
@@ -38,8 +41,22 @@ public class GelfAppenderTest {
                 super.append(event);
             }
         };
+    }
+
+    @Test
+    public void ensureHostnameForMessage() {
 
         LoggingEvent event = new LoggingEvent("a.b.c.DasClass", Category.getInstance(this.getClass()), 123L, Priority.INFO, "Das Auto", new RuntimeException("LOL"));
+        gelfAppender.append(event);
+
+        assertThat("Message short message", gelfSender.getLastMessage().getShortMessage(), notNullValue());
+        assertThat("Message full message", gelfSender.getLastMessage().getFullMessage(), notNullValue());
+    }
+
+    @Test
+    public void handleNullInAppend() throws UnknownHostException, SocketException {
+
+        LoggingEvent event = new LoggingEvent("a.b.c.DasClass", Category.getInstance(this.getClass()), 123L, Priority.INFO, null, new RuntimeException("LOL"));
         gelfAppender.append(event);
 
         assertThat("Message hostname", gelfSender.getLastMessage().getHost(), notNullValue());
