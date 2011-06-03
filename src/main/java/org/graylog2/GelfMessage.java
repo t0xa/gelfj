@@ -48,7 +48,7 @@ public class GelfMessage {
     public GelfMessage(String shortMessage, String fullMessage, Long timestamp, String level, String line, String file) {
         this.shortMessage = shortMessage;
         this.fullMessage = fullMessage;
-        this.timestamp = timestamp;
+        this.timestamp = timestamp / 1000L;
         this.level = level;
         this.line = line;
         this.file = file;
