@@ -29,7 +29,7 @@ public class GelfAppender extends AppenderSkeleton {
     private String facility;
     private GelfSender gelfSender;
     private boolean extractStacktrace;
-    private boolean useDiagnosticContext;
+    private boolean addExtendedInformation;
     private Map<String, String> fields;
 
     private static final int MAX_SHORT_MESSAGE_LENGTH = 250;
@@ -55,7 +55,7 @@ public class GelfAppender extends AppenderSkeleton {
     }
 
     public void setAdditionalFields(String additionalFields) {
-         fields = (Map<String, String>) JSONValue.parse(additionalFields.replaceAll("'", "\""));
+        fields = (Map<String, String>) JSONValue.parse(additionalFields.replaceAll("'", "\""));
     }
 
     public int getGraylogPort() {
@@ -98,12 +98,12 @@ public class GelfAppender extends AppenderSkeleton {
         this.originHost = originHost;
     }
 
-    public boolean isUseDiagnosticContext() {
-        return useDiagnosticContext;
+    public boolean isAddExtendedInformation() {
+        return addExtendedInformation;
     }
 
-    public void setUseDiagnosticContext(boolean useDiagnosticContext) {
-        this.useDiagnosticContext = useDiagnosticContext;
+    public void setAddExtendedInformation(boolean addExtendedInformation) {
+        this.addExtendedInformation = addExtendedInformation;
     }
 
     @Override
@@ -166,12 +166,15 @@ public class GelfAppender extends AppenderSkeleton {
                 fields.remove(ORIGIN_HOST_KEY);
             }
 
-            for(String key : fields.keySet()) {
-                gelfMessage.addField(key, fields.get(key));
+            for (Map.Entry<String, String> entry : fields.entrySet()) {
+                gelfMessage.addField(entry.getKey(), entry.getValue());
             }
         }
 
-        if (isUseDiagnosticContext()) {
+        if (isAddExtendedInformation()) {
+
+            gelfMessage.addField(LOGGER_NAME, event.getLoggerName());
+            gelfMessage.addField(JAVA_TIMESTAMP, Long.toString(timeStamp));
 
             // Get MDC and add a GELF field for each key/value pair
             Map<String, Object> mdc = MDC.getContext();
@@ -190,7 +193,6 @@ public class GelfAppender extends AppenderSkeleton {
 
                 gelfMessage.addField(LOGGER_NDC, ndc);
             }
-            gelfMessage.addField(JAVA_TIMESTAMP, Long.toString(timeStamp));
         }
 
         if(!getGelfSender().sendMessage(gelfMessage)) {
@@ -202,7 +204,7 @@ public class GelfAppender extends AppenderSkeleton {
         return gelfSender;
     }
 
-    private long getTimestamp(LoggingEvent event)  {
+    private long getTimestamp(LoggingEvent event) {
         return Log4jVersionChecker.getTimeStamp(event);
     }
 

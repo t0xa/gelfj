@@ -9,27 +9,7 @@ It's very simple GELF implementation in pure Java with the Log4j appender. It su
 How to use GELFJ
 ----------------
 
-Grab latest JAR from the [downloads section](https://github.com/t0xa/gelfj/downloads) and drop it into your classpath.
-
-Examples
---------
-
-To send a GELF message:
-   
-    GelfMessage message = new GelfMessage("Short message", "Long message", new Date(), "1");
-    GelfSender gelfSender = new GelfSender("localhost");
-    if (message.isValid()) {
-       gelfSender.sendMessage(message)
-    }
-
-To send a GELF message with additional fields:
-   
-    GelfMessage message = new GelfMessage("Short message", "Long message", new Date(), "1");
-    message.addField("specialVariable", "LOLCAT").addField("anotherValue", "typos in my closet");
-    GelfSender gelfSender = new GelfSender("localhost");
-    if (message.isValid()) {
-       gelfSender.sendMessage(message)
-    }
+Drop the latest JAR into your classpath and configure Log4j to use it.
 
 Log4j appender
 --------------
@@ -42,7 +22,7 @@ To use GELF Facility as appender in Log4j (XML configuration format):
         <param name="graylogHost" value="192.168.0.201"/>
         <param name="originHost" value="my.machine.example.com"/>
         <param name="extractStacktrace" value="true"/>
-        <param name="useDiagnosticContext" value="true"/>
+        <param name="addExtendedInformation" value="true"/>
         <param name="facility" value="gelf-java"/>
         <param name="Threshold" value="INFO"/>
     </appender>
@@ -63,7 +43,7 @@ Or, in the log4j.properties format:
     log4j.appender.graylog2.facility=gelf-java
     log4j.appender.graylog2.layout=org.apache.log4j.PatternLayout
     log4j.appender.graylog2.extractStacktrace=true
-    log4j.appender.graylog2.useDiagnosticContext=true
+    log4j.appender.graylog2.addExtendedInformation=true
 
     # Send all INFO logs to graylog2
     log4j.rootLogger=INFO, graylog2
@@ -78,7 +58,7 @@ GelfAppender supports the following options:
 - **graylogPort**: Port on which the Graylog2 server is listening; default 12201 (*optional*)
 - **originHost**: Name of the originating host; defaults to the local hostname (*optional*)
 - **extractStacktrace** (true/false): Add stacktraces to the GELF message; default false (*optional*)
-- **useDiagnosticContext** (true/false): Use additional information from Log4j's NDC/MDC; default false (*optional*)
+- **addExtendedInformation** (true/false): Add extended information like Log4j's NDC/MDC; default false (*optional*)
 - **facility**: Facility which to use in the GELF message; default "gelf-java"
 
 What is GELF

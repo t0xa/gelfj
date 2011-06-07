@@ -14,7 +14,7 @@
         <param name="originHost" value="my.machine.example.com"/>
         <param name="additionalFields" value="{'environment': 'DEV', 'application': 'MyAPP'}"/>
         <param name="extractStacktrace" value="true"/>
-        <param name="useDiagnosticContext" value="true"/>
+        <param name="addExtendedInformation" value="true"/>
         <param name="Facility" value="USER"/>
         <param name="FacilityPrinting" value="true"/>
         <param name="Threshold" value="INFO"/>
