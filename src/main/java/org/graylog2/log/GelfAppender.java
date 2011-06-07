@@ -2,6 +2,7 @@ package org.graylog2.log;
 
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.Level;
+import org.apache.log4j.MDC;
 import org.apache.log4j.spi.ErrorCode;
 import org.apache.log4j.spi.LocationInfo;
 import org.apache.log4j.spi.LoggingEvent;
@@ -28,10 +29,12 @@ public class GelfAppender extends AppenderSkeleton {
     private String facility;
     private GelfSender gelfSender;
     private boolean extractStacktrace;
+    private boolean useDiagnosticContext;
     private Map<String, String> fields;
 
     private static final int MAX_SHORT_MESSAGE_LENGTH = 250;
     private static final String ORIGIN_HOST_KEY = "originHost";
+    private static final String NDC_KEY = "context";
 
     public GelfAppender() {
         super();
@@ -93,6 +96,14 @@ public class GelfAppender extends AppenderSkeleton {
         this.originHost = originHost;
     }
 
+    public boolean isUseDiagnosticContext() {
+        return useDiagnosticContext;
+    }
+
+    public void setUseDiagnosticContext(boolean useDiagnosticContext) {
+        this.useDiagnosticContext = useDiagnosticContext;
+    }
+
     @Override
     public void activateOptions() {
         try {
@@ -128,12 +139,13 @@ public class GelfAppender extends AppenderSkeleton {
             shortMessage = renderedMessage;
         }
 
-        if (extractStacktrace) {
+        if (isExtractStacktrace()) {
             ThrowableInformation throwableInformation = event.getThrowableInformation();
             if (throwableInformation != null) {
                 renderedMessage += "\n\r" + extractStacktrace(throwableInformation);
             }
         }
+
         GelfMessage gelfMessage = new GelfMessage(shortMessage, renderedMessage, timeStamp,
                 String.valueOf(level.getSyslogEquivalent()), lineNumber, file);
 
@@ -156,7 +168,31 @@ public class GelfAppender extends AppenderSkeleton {
                 gelfMessage.addField(key, fields.get(key));
             }
         }
-        getGelfSender().sendMessage(gelfMessage);
+
+        if (isUseDiagnosticContext()) {
+
+            // Get MDC and add a GELF field for each key/value pair
+            Map<String, Object> mdc = MDC.getContext();
+
+            if(mdc != null) {
+                for(Map.Entry<String, Object> entry : mdc.entrySet()) {
+
+                    gelfMessage.addField(entry.getKey(), entry.getValue().toString());
+                }
+            }
+
+            // Get NDC and add a GELF field
+            String ndc = event.getNDC();
+
+            if(ndc != null) {
+
+                gelfMessage.addField(NDC_KEY, ndc);
+            }
+        }
+
+        if(!getGelfSender().sendMessage(gelfMessage)) {
+            errorHandler.error("Could not send GELF message");
+        }
     }
 
     public GelfSender getGelfSender() {
