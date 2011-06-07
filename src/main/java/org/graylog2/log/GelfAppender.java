@@ -34,7 +34,9 @@ public class GelfAppender extends AppenderSkeleton {
 
     private static final int MAX_SHORT_MESSAGE_LENGTH = 250;
     private static final String ORIGIN_HOST_KEY = "originHost";
-    private static final String NDC_KEY = "context";
+    private static final String LOGGER_NAME = "logger";
+    private static final String LOGGER_NDC = "loggerNdc";
+    private static final String JAVA_TIMESTAMP = "timestampMs";
 
     public GelfAppender() {
         super();
@@ -186,8 +188,9 @@ public class GelfAppender extends AppenderSkeleton {
 
             if(ndc != null) {
 
-                gelfMessage.addField(NDC_KEY, ndc);
+                gelfMessage.addField(LOGGER_NDC, ndc);
             }
+            gelfMessage.addField(JAVA_TIMESTAMP, Long.toString(timeStamp));
         }
 
         if(!getGelfSender().sendMessage(gelfMessage)) {
