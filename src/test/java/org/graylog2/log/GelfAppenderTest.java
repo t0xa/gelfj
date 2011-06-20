@@ -18,9 +18,9 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.*;
 
 /**
- * (c) Copyright: Anton Yakimov
  *
- *
+ * @author Anton Yakimov
+ * @author Jochen Schalanda
  */
 public class GelfAppenderTest {
 
@@ -113,6 +113,7 @@ public class GelfAppenderTest {
         assertNull(gelfSender.getLastMessage().getAdditonalFields().get("foo"));
     }
 
+    @Test
     public void checkExtendedInformation() throws UnknownHostException, SocketException {
 
         gelfAppender.setAddExtendedInformation(true);

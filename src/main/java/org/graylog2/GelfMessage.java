@@ -4,18 +4,16 @@ import org.json.simple.JSONValue;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
+import java.io.OutputStream;
 import java.util.*;
 import java.util.zip.GZIPOutputStream;
 
 public class GelfMessage {
 
-    public static final int MAXIMUM_CHUNK_SIZE = 1420;
-    public static final String GELF_VERSION = "1.0";
-    public static final byte[] GELF_CHUNKED_ID = new byte[]{0x1e, 0x0f};
-
     private static final String ID_NAME = "id";
+    private static final String GELF_VERSION = "1.0";
+    private static final byte[] GELF_CHUNKED_ID = new byte[]{0x1e, 0x0f};
+    private static final int MAXIMUM_CHUNK_SIZE = 1420;
 
     private String version = GELF_VERSION;
     private String host;
@@ -55,7 +53,7 @@ public class GelfMessage {
     }
 
     public String toJson() {
-        HashMap<String, Object> map = new HashMap<String, Object>();
+        Map<String, Object> map = new HashMap<String, Object>();
 
         map.put("version", getVersion());
         map.put("host", getHost());
@@ -68,10 +66,10 @@ public class GelfMessage {
         map.put("file", getFile());
         map.put("line", getLine());
 
-        for (String additionalField : additonalFields.keySet()) {
-            if (ID_NAME.equals(additionalField)) continue;
-            Object value = additonalFields.get(additionalField);
-            map.put("_" + additionalField, value);
+        for (Map.Entry<String, Object> additionalField : additonalFields.entrySet()) {
+            if (!ID_NAME.equals(additionalField.getKey())) {
+                map.put("_" + additionalField.getKey(), additionalField.getValue());
+            }
         }
 
         return JSONValue.toJSONString(map);
@@ -106,8 +104,9 @@ public class GelfMessage {
 
     private byte[] gzipMessage(String message) {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
+
         try {
-            GZIPOutputStream stream = new GZIPOutputStream(bos);
+            OutputStream stream = new GZIPOutputStream(bos);
             stream.write(message.getBytes());
             stream.close();
             byte[] zipped = bos.toByteArray();
@@ -211,7 +210,7 @@ public class GelfMessage {
         return str == null || "".equals(str.trim());
     }
 
-    public byte[] concatByteArray(byte[] first, byte[] second) {
+    private byte[] concatByteArray(byte[] first, byte[] second) {
         byte[] result = Arrays.copyOf(first, first.length + second.length);
         System.arraycopy(second, 0, result, first.length, second.length);
         return result;

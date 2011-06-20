@@ -19,7 +19,9 @@ import java.net.UnknownHostException;
 import java.util.Map;
 
 /**
- * anton @ 11.30.1 17:28
+ *
+ * @author Anton Yakimov
+ * @author Jochen Schalanda
  */
 public class GelfAppender extends AppenderSkeleton {
 
