@@ -6,7 +6,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
- * anton 11:00 2011:04:10
+ *
+ * @author Anton Yakimov
+ * @author Jochen Schalanda
  */
 public class Log4jVersionChecker {
 
