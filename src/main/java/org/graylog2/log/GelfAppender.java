@@ -2,6 +2,7 @@ package org.graylog2.log;
 
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.Level;
+import org.apache.log4j.MDC;
 import org.apache.log4j.spi.ErrorCode;
 import org.apache.log4j.spi.LocationInfo;
 import org.apache.log4j.spi.LoggingEvent;
@@ -18,7 +19,9 @@ import java.net.UnknownHostException;
 import java.util.Map;
 
 /**
- * anton @ 11.30.1 17:28
+ *
+ * @author Anton Yakimov
+ * @author Jochen Schalanda
  */
 public class GelfAppender extends AppenderSkeleton {
 
@@ -28,10 +31,14 @@ public class GelfAppender extends AppenderSkeleton {
     private String facility;
     private GelfSender gelfSender;
     private boolean extractStacktrace;
+    private boolean addExtendedInformation;
     private Map<String, String> fields;
 
     private static final int MAX_SHORT_MESSAGE_LENGTH = 250;
     private static final String ORIGIN_HOST_KEY = "originHost";
+    private static final String LOGGER_NAME = "logger";
+    private static final String LOGGER_NDC = "loggerNdc";
+    private static final String JAVA_TIMESTAMP = "timestampMs";
 
     public GelfAppender() {
         super();
@@ -50,7 +57,7 @@ public class GelfAppender extends AppenderSkeleton {
     }
 
     public void setAdditionalFields(String additionalFields) {
-         fields = (Map<String, String>) JSONValue.parse(additionalFields.replaceAll("'", "\""));
+        fields = (Map<String, String>) JSONValue.parse(additionalFields.replaceAll("'", "\""));
     }
 
     public int getGraylogPort() {
@@ -93,6 +100,14 @@ public class GelfAppender extends AppenderSkeleton {
         this.originHost = originHost;
     }
 
+    public boolean isAddExtendedInformation() {
+        return addExtendedInformation;
+    }
+
+    public void setAddExtendedInformation(boolean addExtendedInformation) {
+        this.addExtendedInformation = addExtendedInformation;
+    }
+
     @Override
     public void activateOptions() {
         try {
@@ -128,12 +143,13 @@ public class GelfAppender extends AppenderSkeleton {
             shortMessage = renderedMessage;
         }
 
-        if (extractStacktrace) {
+        if (isExtractStacktrace()) {
             ThrowableInformation throwableInformation = event.getThrowableInformation();
             if (throwableInformation != null) {
                 renderedMessage += "\n\r" + extractStacktrace(throwableInformation);
             }
         }
+
         GelfMessage gelfMessage = new GelfMessage(shortMessage, renderedMessage, timeStamp,
                 String.valueOf(level.getSyslogEquivalent()), lineNumber, file);
 
@@ -152,18 +168,45 @@ public class GelfAppender extends AppenderSkeleton {
                 fields.remove(ORIGIN_HOST_KEY);
             }
 
-            for(String key : fields.keySet()) {
-                gelfMessage.addField(key, fields.get(key));
+            for (Map.Entry<String, String> entry : fields.entrySet()) {
+                gelfMessage.addField(entry.getKey(), entry.getValue());
             }
         }
-        getGelfSender().sendMessage(gelfMessage);
+
+        if (isAddExtendedInformation()) {
+
+            gelfMessage.addField(LOGGER_NAME, event.getLoggerName());
+            gelfMessage.addField(JAVA_TIMESTAMP, Long.toString(timeStamp));
+
+            // Get MDC and add a GELF field for each key/value pair
+            Map<String, Object> mdc = MDC.getContext();
+
+            if(mdc != null) {
+                for(Map.Entry<String, Object> entry : mdc.entrySet()) {
+
+                    gelfMessage.addField(entry.getKey(), entry.getValue().toString());
+                }
+            }
+
+            // Get NDC and add a GELF field
+            String ndc = event.getNDC();
+
+            if(ndc != null) {
+
+                gelfMessage.addField(LOGGER_NDC, ndc);
+            }
+        }
+
+        if(!getGelfSender().sendMessage(gelfMessage)) {
+            errorHandler.error("Could not send GELF message");
+        }
     }
 
     public GelfSender getGelfSender() {
         return gelfSender;
     }
 
-    private long getTimestamp(LoggingEvent event)  {
+    private long getTimestamp(LoggingEvent event) {
         return Log4jVersionChecker.getTimeStamp(event);
     }
 

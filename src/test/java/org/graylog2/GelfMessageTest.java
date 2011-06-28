@@ -1,16 +1,13 @@
 package org.graylog2;
 
 import org.json.simple.JSONValue;
-import org.json.simple.parser.JSONParser;
 import org.junit.Test;
 
-import java.net.InetAddress;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 import static junit.framework.Assert.*;
-import static junit.framework.Assert.assertEquals;
 
 public class GelfMessageTest {
 

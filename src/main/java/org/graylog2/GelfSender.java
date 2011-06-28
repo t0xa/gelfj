@@ -8,6 +8,9 @@ public class GelfSender {
 
     private static final int DEFAULT_PORT = 12201;
 
+    private static final int PORT_MIN = 8000;
+    private static final int PORT_MAX = 8888;
+
     private InetAddress host;
     private int port;
     private DatagramSocket socket;
@@ -23,17 +26,18 @@ public class GelfSender {
     }
 
     private DatagramSocket initiateSocket() throws SocketException {
-        int from = 8000;
-        int to = 8888;
+        int port = PORT_MIN;
+
         DatagramSocket resultingSocket = null;
         boolean binded = false;
         while (!binded) {
             try {
-                resultingSocket = new DatagramSocket(from);
+                resultingSocket = new DatagramSocket(port);
                 binded = true;
             } catch (SocketException e) {
-                from++;
-                if (from > to)
+                port++;
+
+                if (port > PORT_MAX)
                     throw e;
             }
         }
