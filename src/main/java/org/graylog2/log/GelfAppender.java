@@ -197,7 +197,7 @@ public class GelfAppender extends AppenderSkeleton {
             }
         }
 
-        if(!getGelfSender().sendMessage(gelfMessage)) {
+        if(getGelfSender() == null || !getGelfSender().sendMessage(gelfMessage)) {
             errorHandler.error("Could not send GELF message");
         }
     }
