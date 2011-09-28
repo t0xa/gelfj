@@ -25,6 +25,7 @@ To use GELF Facility as appender in Log4j (XML configuration format):
         <param name="addExtendedInformation" value="true"/>
         <param name="facility" value="gelf-java"/>
         <param name="Threshold" value="INFO"/>
+        <param name="additionalFields" value="{'environment': 'DEV', 'application': 'MyAPP'}"/>
     </appender>
 
 and then add it as a one of appenders:
@@ -44,6 +45,7 @@ Or, in the log4j.properties format:
     log4j.appender.graylog2.layout=org.apache.log4j.PatternLayout
     log4j.appender.graylog2.extractStacktrace=true
     log4j.appender.graylog2.addExtendedInformation=true
+    log4j.appender.graylog2.additionalFields={'environment': 'DEV', 'application': 'MyAPP'}
 
     # Send all INFO logs to graylog2
     log4j.rootLogger=INFO, graylog2
