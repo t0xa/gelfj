@@ -36,13 +36,6 @@ public class GelfMessage {
         this.level = level;
     }
 
-    public GelfMessage(String shortMessage, String fullMessage, Long timestamp, String level) {
-        this.shortMessage = shortMessage;
-        this.fullMessage = fullMessage;
-        this.timestamp = timestamp;
-        this.level = level;
-    }
-
     public GelfMessage(String shortMessage, String fullMessage, Long timestamp, String level, String line, String file) {
         this.shortMessage = shortMessage;
         this.fullMessage = fullMessage;
@@ -190,6 +183,11 @@ public class GelfMessage {
     }
 
     public GelfMessage addField(String key, String value) {
+        getAdditonalFields().put(key, value);
+        return this;
+    }
+
+    public GelfMessage addField(String key, Object value) {
         getAdditonalFields().put(key, value);
         return this;
     }

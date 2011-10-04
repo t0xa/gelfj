@@ -39,4 +39,19 @@ public class GelfMessageTest {
         List<byte[]> bytes = message.toDatagrams();
         assertEquals(1, bytes.size());
     }
+
+    @Test
+    public void testAdditionalFields() throws Exception {
+        GelfMessage message = new GelfMessage();
+        message.setTimestamp(1L);
+        message.addField("one", "two").addField("three", 4).addField("five", 6.0);
+
+        String json = message.toJson();
+
+        Map resultingMap = (Map) JSONValue.parse(json);
+
+        assertEquals(resultingMap.get("_one"), "two");
+        assertEquals(resultingMap.get("_three"), 4L);
+        assertEquals(resultingMap.get("_five"), 6.0);
+    }
 }
