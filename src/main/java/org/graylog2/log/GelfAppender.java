@@ -8,6 +8,7 @@ import org.apache.log4j.spi.LocationInfo;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.ThrowableInformation;
 import org.graylog2.GelfMessage;
+import org.graylog2.GelfMessageFactory;
 import org.graylog2.GelfSender;
 import org.json.simple.JSONValue;
 
@@ -34,7 +35,6 @@ public class GelfAppender extends AppenderSkeleton {
     private boolean addExtendedInformation;
     private Map<String, String> fields;
 
-    private static final int MAX_SHORT_MESSAGE_LENGTH = 250;
     private static final String ORIGIN_HOST_KEY = "originHost";
     private static final String LOGGER_NAME = "logger";
     private static final String LOGGER_NDC = "loggerNdc";
@@ -121,37 +121,7 @@ public class GelfAppender extends AppenderSkeleton {
 
     @Override
     protected void append(LoggingEvent event) {
-
-        long timeStamp = getTimestamp(event);
-
-        Level level = event.getLevel();
-
-        LocationInfo locationInformation = event.getLocationInformation();
-        String file = locationInformation.getFileName();
-        String lineNumber = locationInformation.getLineNumber();
-
-        String renderedMessage = event.getRenderedMessage();
-        String shortMessage;
-
-        if(renderedMessage == null) {
-            renderedMessage = "";
-        }
-
-        if (renderedMessage.length() > MAX_SHORT_MESSAGE_LENGTH) {
-            shortMessage = renderedMessage.substring(0, MAX_SHORT_MESSAGE_LENGTH - 1);
-        } else {
-            shortMessage = renderedMessage;
-        }
-
-        if (isExtractStacktrace()) {
-            ThrowableInformation throwableInformation = event.getThrowableInformation();
-            if (throwableInformation != null) {
-                renderedMessage += "\n\r" + extractStacktrace(throwableInformation);
-            }
-        }
-
-        GelfMessage gelfMessage = new GelfMessage(shortMessage, renderedMessage, timeStamp,
-                String.valueOf(level.getSyslogEquivalent()), lineNumber, file);
+        GelfMessage gelfMessage = GelfMessageFactory.makeMessage(event, isExtractStacktrace());
 
         if (getOriginHost() != null) {
             gelfMessage.setHost(getOriginHost());
@@ -176,7 +146,7 @@ public class GelfAppender extends AppenderSkeleton {
         if (isAddExtendedInformation()) {
 
             gelfMessage.addField(LOGGER_NAME, event.getLoggerName());
-            gelfMessage.addField(JAVA_TIMESTAMP, Long.toString(timeStamp));
+            gelfMessage.addField(JAVA_TIMESTAMP, Long.toString(gelfMessage.getJavaTimestamp()));
 
             // Get MDC and add a GELF field for each key/value pair
             Map<String, Object> mdc = MDC.getContext();
@@ -204,17 +174,6 @@ public class GelfAppender extends AppenderSkeleton {
 
     public GelfSender getGelfSender() {
         return gelfSender;
-    }
-
-    private long getTimestamp(LoggingEvent event) {
-        return Log4jVersionChecker.getTimeStamp(event);
-    }
-
-    private String extractStacktrace(ThrowableInformation throwableInformation) {
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        throwableInformation.getThrowable().printStackTrace(pw);
-        return sw.toString();
     }
 
     public void close() {

@@ -20,6 +20,7 @@ public class GelfMessage {
     private String shortMessage;
     private String fullMessage;
     private Long timestamp;
+    private long javaTimestamp;
     private String level;
     private String facility = "gelf-java";
     private String line;
@@ -29,17 +30,21 @@ public class GelfMessage {
     public GelfMessage() {
     }
 
+    // todo: merge these constructors.
+    
     public GelfMessage(String shortMessage, String fullMessage, Date timestamp, String level) {
         this.shortMessage = shortMessage;
         this.fullMessage = fullMessage;
-        this.timestamp = timestamp.getTime() / 1000L;
+        this.javaTimestamp = timestamp.getTime();
+        this.timestamp = javaTimestamp / 1000L;
         this.level = level;
     }
 
     public GelfMessage(String shortMessage, String fullMessage, Long timestamp, String level, String line, String file) {
         this.shortMessage = shortMessage;
         this.fullMessage = fullMessage;
-        this.timestamp = timestamp / 1000L;
+        this.javaTimestamp = timestamp;
+        this.timestamp = javaTimestamp / 1000L;
         this.level = level;
         this.line = line;
         this.file = file;
@@ -144,6 +149,10 @@ public class GelfMessage {
 
     public Long getTimestamp() {
         return timestamp;
+    }
+    
+    public Long getJavaTimestamp() {
+        return javaTimestamp;
     }
 
     public void setTimestamp(Long timestamp) {
