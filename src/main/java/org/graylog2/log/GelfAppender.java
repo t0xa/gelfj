@@ -9,6 +9,7 @@ import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.ThrowableInformation;
 import org.graylog2.GelfMessage;
 import org.graylog2.GelfMessageFactory;
+import org.graylog2.GelfMessageProvider;
 import org.graylog2.GelfSender;
 import org.json.simple.JSONValue;
 
@@ -17,6 +18,8 @@ import java.io.StringWriter;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -24,7 +27,7 @@ import java.util.Map;
  * @author Anton Yakimov
  * @author Jochen Schalanda
  */
-public class GelfAppender extends AppenderSkeleton {
+public class GelfAppender extends AppenderSkeleton implements GelfMessageProvider {
 
     private String graylogHost;
     private String originHost;
@@ -34,11 +37,6 @@ public class GelfAppender extends AppenderSkeleton {
     private boolean extractStacktrace;
     private boolean addExtendedInformation;
     private Map<String, String> fields;
-
-    private static final String ORIGIN_HOST_KEY = "originHost";
-    private static final String LOGGER_NAME = "logger";
-    private static final String LOGGER_NDC = "loggerNdc";
-    private static final String JAVA_TIMESTAMP = "timestampMs";
 
     public GelfAppender() {
         super();
@@ -107,6 +105,13 @@ public class GelfAppender extends AppenderSkeleton {
     public void setAddExtendedInformation(boolean addExtendedInformation) {
         this.addExtendedInformation = addExtendedInformation;
     }
+    
+    public Map<String, String> getFields() {
+        if (fields == null) {
+            fields = new HashMap<String, String>();
+        }
+        return Collections.unmodifiableMap(fields);
+    }
 
     @Override
     public void activateOptions() {
@@ -121,51 +126,7 @@ public class GelfAppender extends AppenderSkeleton {
 
     @Override
     protected void append(LoggingEvent event) {
-        GelfMessage gelfMessage = GelfMessageFactory.makeMessage(event, isExtractStacktrace());
-
-        if (getOriginHost() != null) {
-            gelfMessage.setHost(getOriginHost());
-        }
-
-        if (getFacility() != null) {
-            gelfMessage.setFacility(getFacility());
-        }
-
-        if (fields != null && !fields.isEmpty()) {
-
-            if (fields.containsKey(ORIGIN_HOST_KEY) && gelfMessage.getHost() == null) {
-                gelfMessage.setHost(fields.get(ORIGIN_HOST_KEY));
-                fields.remove(ORIGIN_HOST_KEY);
-            }
-
-            for (Map.Entry<String, String> entry : fields.entrySet()) {
-                gelfMessage.addField(entry.getKey(), entry.getValue());
-            }
-        }
-
-        if (isAddExtendedInformation()) {
-
-            gelfMessage.addField(LOGGER_NAME, event.getLoggerName());
-            gelfMessage.addField(JAVA_TIMESTAMP, Long.toString(gelfMessage.getJavaTimestamp()));
-
-            // Get MDC and add a GELF field for each key/value pair
-            Map<String, Object> mdc = MDC.getContext();
-
-            if(mdc != null) {
-                for(Map.Entry<String, Object> entry : mdc.entrySet()) {
-
-                    gelfMessage.addField(entry.getKey(), entry.getValue().toString());
-                }
-            }
-
-            // Get NDC and add a GELF field
-            String ndc = event.getNDC();
-
-            if(ndc != null) {
-
-                gelfMessage.addField(LOGGER_NDC, ndc);
-            }
-        }
+        GelfMessage gelfMessage = GelfMessageFactory.makeMessage(event, this);
 
         if(getGelfSender() == null || !getGelfSender().sendMessage(gelfMessage)) {
             errorHandler.error("Could not send GELF message");
