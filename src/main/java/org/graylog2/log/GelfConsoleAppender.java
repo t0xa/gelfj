@@ -25,7 +25,7 @@ import java.util.Map;
  */
 public class GelfConsoleAppender extends ConsoleAppender implements GelfMessageProvider{
     
-    private String originHost;
+    private static String originHost;
     private boolean extractStacktrace;
     private boolean addExtendedInformation;
     private Map<String, String> fields;
@@ -66,11 +66,11 @@ public class GelfConsoleAppender extends ConsoleAppender implements GelfMessageP
         this.addExtendedInformation = addExtendedInformation;
     }
     
-    public String getOriginHost() {
+    public static String getOriginHost() {
         return originHost;
     }
 
-    public void setOriginHost(String originHost) {
+    public static void setOriginHost(String originHost) {
         this.originHost = originHost;
     }
 
