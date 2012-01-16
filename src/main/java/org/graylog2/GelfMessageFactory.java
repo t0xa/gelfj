@@ -16,6 +16,7 @@ public class GelfMessageFactory {
     private static final String ORIGIN_HOST_KEY = "originHost";
     private static final String LOGGER_NAME = "logger";
     private static final String LOGGER_NDC = "loggerNdc";
+    private static final String THREAD_NAME = "thread";
     private static final String JAVA_TIMESTAMP = "timestampMs";
     
     public static final GelfMessage makeMessage(LoggingEvent event, GelfMessageProvider provider) {
@@ -69,6 +70,7 @@ public class GelfMessageFactory {
 
         if (provider.isAddExtendedInformation()) {
 
+            gelfMessage.addField(THREAD_NAME, event.getThreadName());
             gelfMessage.addField(LOGGER_NAME, event.getLoggerName());
             gelfMessage.addField(JAVA_TIMESTAMP, Long.toString(gelfMessage.getJavaTimestamp()));
 
