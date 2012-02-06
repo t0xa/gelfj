@@ -40,6 +40,13 @@ public class GelfAppender extends AppenderSkeleton implements GelfMessageProvide
 
     public GelfAppender() {
         super();
+        
+        try
+        {
+            originHost = InetAddress.getLocalHost().getCanonicalHostName();
+        } catch (UnknownHostException e)
+        {
+        }
     }
 
     public void setAdditionalFields(String additionalFields) {
