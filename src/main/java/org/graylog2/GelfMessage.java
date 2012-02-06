@@ -5,6 +5,8 @@ import org.json.simple.JSONValue;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.zip.GZIPOutputStream;
 
@@ -17,6 +19,7 @@ public class GelfMessage {
 
     private String version = GELF_VERSION;
     private String host;
+    private byte[] hostBytes = lastFourAsciiBytes("none");
     private String shortMessage;
     private String fullMessage;
     private Long timestamp;
@@ -86,7 +89,11 @@ public class GelfMessage {
 
     private void sliceDatagrams(byte[] messageBytes, List<byte[]> datagrams) {
         int messageLength = messageBytes.length;
-        byte[] messageId = Arrays.copyOf((new Date().getTime() + getHost()).getBytes(), 32);
+        byte[] messageId = ByteBuffer.allocate(8)
+            .putInt((int) System.currentTimeMillis())       // 4 least-significant-bytes of the time in millis
+            .put(hostBytes)                                // 4 least-significant-bytes of the host
+            .array();
+
         int num = ((Double) Math.ceil((double) messageLength / MAXIMUM_CHUNK_SIZE)).intValue();
         for (int idx = 0; idx < num; idx++) {
             byte[] header = concatByteArray(GELF_CHUNKED_ID, concatByteArray(messageId, new byte[]{(byte) idx, (byte) num}));
@@ -115,6 +122,15 @@ public class GelfMessage {
         }
     }
 
+    private byte[] lastFourAsciiBytes(String host) {
+        final String shortHost = host.length() >= 4 ? host.substring(host.length() - 4) : host;
+        try {
+            return shortHost.getBytes("ASCII");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException("JVM without ascii support?", e);
+        }
+    }
+
     public String getVersion() {
         return version;
     }
@@ -129,6 +145,7 @@ public class GelfMessage {
 
     public void setHost(String host) {
         this.host = host;
+        this.hostBytes = lastFourAsciiBytes(host);
     }
 
     public String getShortMessage() {
