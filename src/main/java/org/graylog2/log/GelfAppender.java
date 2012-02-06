@@ -30,7 +30,7 @@ import java.util.Map;
 public class GelfAppender extends AppenderSkeleton implements GelfMessageProvider {
 
     private String graylogHost;
-    private static String originHost;
+    private String originHost = "localhost";
     private int graylogPort = 12201;
     private String facility;
     private GelfSender gelfSender;
@@ -40,6 +40,13 @@ public class GelfAppender extends AppenderSkeleton implements GelfMessageProvide
 
     public GelfAppender() {
         super();
+        
+        try
+        {
+            originHost = InetAddress.getLocalHost().getCanonicalHostName();
+        } catch (UnknownHostException e)
+        {
+        }
     }
 
     public void setAdditionalFields(String additionalFields) {
@@ -78,11 +85,11 @@ public class GelfAppender extends AppenderSkeleton implements GelfMessageProvide
         this.extractStacktrace = extractStacktrace;
     }
 
-    public static String getOriginHost() {
+    public String getOriginHost() {
         return originHost;
     }
 
-    public static void setOriginHost(String originHost) {
+    public void setOriginHost(String originHost) {
         this.originHost = originHost;
     }
 

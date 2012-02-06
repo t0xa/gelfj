@@ -106,7 +106,6 @@ public class GelfMessage {
         try {
             OutputStream stream = new GZIPOutputStream(bos);
             stream.write(message.getBytes());
-            stream.finish();
             stream.close();
             byte[] zipped = bos.toByteArray();
             bos.close();
