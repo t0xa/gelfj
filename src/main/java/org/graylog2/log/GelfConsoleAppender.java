@@ -8,6 +8,8 @@ import org.graylog2.GelfMessageFactory;
 import org.graylog2.GelfMessageProvider;
 import org.json.simple.JSONValue;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,7 +27,7 @@ import java.util.Map;
  */
 public class GelfConsoleAppender extends ConsoleAppender implements GelfMessageProvider{
     
-    private static String originHost;
+    private String originHost;
     private boolean extractStacktrace;
     private boolean addExtendedInformation;
     private Map<String, String> fields;
@@ -34,14 +36,35 @@ public class GelfConsoleAppender extends ConsoleAppender implements GelfMessageP
     
     public GelfConsoleAppender() {
         super();    //To change body of overridden methods use File | Settings | File Templates.
+        
+        try
+        {
+            originHost = InetAddress.getLocalHost().getCanonicalHostName();
+        } catch (UnknownHostException e)
+        {
+        }
     }
 
     public GelfConsoleAppender(Layout layout) {
         super(layout);    //To change body of overridden methods use File | Settings | File Templates.
+        
+        try
+        {
+            originHost = InetAddress.getLocalHost().getCanonicalHostName();
+        } catch (UnknownHostException e)
+        {
+        }
     }
 
     public GelfConsoleAppender(Layout layout, String target) {
         super(layout, target);    //To change body of overridden methods use File | Settings | File Templates.
+        
+        try
+        {
+            originHost = InetAddress.getLocalHost().getCanonicalHostName();
+        } catch (UnknownHostException e)
+        {
+        }
     }
     
     // GelfMessageProvider interface.
