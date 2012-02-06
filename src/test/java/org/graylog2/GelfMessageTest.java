@@ -3,6 +3,7 @@ package org.graylog2;
 import org.json.simple.JSONValue;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +32,10 @@ public class GelfMessageTest {
         GelfMessage message = new GelfMessage("Long", longString, new Date(), "1");
         List<byte[]> bytes2 = message.toDatagrams();
         assertEquals(2, bytes2.size());
+        assertTrue(Arrays.equals(Arrays.copyOfRange(bytes2.get(0), 10, 11), new byte[] {0x00}));
+        assertTrue(Arrays.equals(Arrays.copyOfRange(bytes2.get(0), 11, 12), new byte[] {0x02}));
+        assertTrue(Arrays.equals(Arrays.copyOfRange(bytes2.get(1), 10, 11), new byte[] {0x01}));
+        assertTrue(Arrays.equals(Arrays.copyOfRange(bytes2.get(1), 11, 12), new byte[] {0x02}));
     }
 
     @Test
