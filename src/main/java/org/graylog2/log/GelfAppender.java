@@ -78,7 +78,7 @@ public class GelfAppender extends AppenderSkeleton implements GelfMessageProvide
         this.extractStacktrace = extractStacktrace;
     }
 
-    public static String getOriginHost() {
+    public String getOriginHost() {
         return originHost;
     }
 
