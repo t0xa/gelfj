@@ -89,7 +89,7 @@ public class GelfMessage {
         byte[] messageId = Arrays.copyOf((new Date().getTime() + getHost()).getBytes(), 32);
         int num = ((Double) Math.ceil((double) messageLength / MAXIMUM_CHUNK_SIZE)).intValue();
         for (int idx = 0; idx < num; idx++) {
-            byte[] header = concatByteArray(GELF_CHUNKED_ID, concatByteArray(messageId, new byte[]{0x00, (byte) idx, 0x00, (byte) num}));
+            byte[] header = concatByteArray(GELF_CHUNKED_ID, concatByteArray(messageId, new byte[]{(byte) idx, (byte) num}));
             int from = idx * MAXIMUM_CHUNK_SIZE;
             int to = from + MAXIMUM_CHUNK_SIZE;
             if (to >= messageLength) {
