@@ -10,6 +10,7 @@ import org.graylog2.GelfSender;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
@@ -47,13 +48,13 @@ public class GelfAppenderTest {
     }
 
     @Test
-    public void ensureHostnameForMessage() {
+    public void ensureHostnameForMessage() throws Exception {
 
         LoggingEvent event = new LoggingEvent(CLASS_NAME, Category.getInstance(GelfAppenderTest.class), 123L, Priority.INFO, "Das Auto",
                                               new RuntimeException("LOL"));
         gelfAppender.append(event);
 
-        assertThat("Message hostname", gelfSender.getLastMessage().getHost(), notNullValue());
+        assertThat("Message hostname", gelfSender.getLastMessage().getHost(), is(InetAddress.getLocalHost().getCanonicalHostName()));
 
         gelfAppender.setOriginHost("example.com");
         gelfAppender.append(event);
