@@ -104,7 +104,7 @@ public class GelfMessage {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
 
         try {
-            OutputStream stream = new GZIPOutputStream(bos);
+            GZIPOutputStream stream = new GZIPOutputStream(bos);
             stream.write(message.getBytes());
             stream.finish();
             stream.close();

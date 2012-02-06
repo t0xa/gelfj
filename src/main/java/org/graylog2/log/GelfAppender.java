@@ -78,11 +78,25 @@ public class GelfAppender extends AppenderSkeleton implements GelfMessageProvide
         this.extractStacktrace = extractStacktrace;
     }
 
-    public static String getOriginHost() {
+    public String getOriginHost() {
+        if (originHost == null) {
+            originHost = getLocalHostName();
+        }
         return originHost;
     }
 
-    public static void setOriginHost(String originHost) {
+    private String getLocalHostName() {
+        String hostName = null;
+        try {
+            hostName = InetAddress.getLocalHost().getHostName();
+        } catch (UnknownHostException e) {
+            errorHandler.error("Unknown local hostname", e, ErrorCode.GENERIC_FAILURE);
+        }
+
+        return hostName;
+    }
+
+    public void setOriginHost(String originHost) {
         this.originHost = originHost;
     }
 

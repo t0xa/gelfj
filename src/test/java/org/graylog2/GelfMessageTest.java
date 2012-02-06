@@ -25,10 +25,10 @@ public class GelfMessageTest {
     @Test
     public void testSendLongMessage() throws Exception {
         String longString = "01234567890123456789 ";
-        for(int i =0; i < 15; i++) {
+        for (int i = 0; i < 15; i++) {
             longString += longString;
         }
-        GelfMessage message = new GelfMessage("Long", longString , new Date(), "1");
+        GelfMessage message = new GelfMessage("Long", longString, new Date(), "1");
         List<byte[]> bytes2 = message.toDatagrams();
         assertEquals(2, bytes2.size());
     }
@@ -53,5 +53,11 @@ public class GelfMessageTest {
         assertEquals(resultingMap.get("_one"), "two");
         assertEquals(resultingMap.get("_three"), 4L);
         assertEquals(resultingMap.get("_five"), 6.0);
+        assertEquals(resultingMap.get("_seven"), 8L);
+    }
+
+    @Test
+    public void generateBallastMessage() {
+        Date date = new Date();
     }
 }

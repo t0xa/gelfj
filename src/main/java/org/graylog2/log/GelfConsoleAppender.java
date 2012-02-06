@@ -66,11 +66,11 @@ public class GelfConsoleAppender extends ConsoleAppender implements GelfMessageP
         this.addExtendedInformation = addExtendedInformation;
     }
     
-    public static String getOriginHost() {
+    public String getOriginHost() {
         return originHost;
     }
 
-    public static void setOriginHost(String originHost) {
+    public void setOriginHost(String originHost) {
         this.originHost = originHost;
     }
 
