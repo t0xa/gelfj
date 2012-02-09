@@ -34,7 +34,7 @@ public class GelfMessage {
     }
 
     // todo: merge these constructors.
-    
+
     public GelfMessage(String shortMessage, String fullMessage, Date timestamp, String level) {
         this.shortMessage = shortMessage;
         this.fullMessage = fullMessage;
@@ -64,8 +64,14 @@ public class GelfMessage {
 
         map.put("level", getLevel());
         map.put("facility", getFacility());
-        map.put("file", getFile());
-        map.put("line", getLine());
+        if( null != getFile() )
+        {
+            map.put("file", getFile());
+        }
+        if( null != getLine() )
+        {
+            map.put("line", getLine());
+        }
 
         for (Map.Entry<String, Object> additionalField : additonalFields.entrySet()) {
             if (!ID_NAME.equals(additionalField.getKey())) {
@@ -168,7 +174,7 @@ public class GelfMessage {
     public Long getTimestamp() {
         return timestamp;
     }
-    
+
     public Long getJavaTimestamp() {
         return javaTimestamp;
     }
