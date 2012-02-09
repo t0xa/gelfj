@@ -1,10 +1,10 @@
-GELFJ - A GELF Appender for Log4j
-=====================================
+GELFJ - A GELF Appender for Log4j and a GELF Handler for JDK Logging
+====================================================================
 
 What is GELFJ
 -------------
 
-It's very simple GELF implementation in pure Java with the Log4j appender. It supports chunked messages which allows you to send large log messages (stacktraces, environment variables, additional fields, etc.) to a [Graylog2](http://www.graylog2.org/) server.
+It's very simple GELF implementation in pure Java with the Log4j appender and JDK Logging Handler. It supports chunked messages which allows you to send large log messages (stacktraces, environment variables, additional fields, etc.) to a [Graylog2](http://www.graylog2.org/) server.
 
 How to use GELFJ
 ----------------
@@ -62,6 +62,25 @@ GelfAppender supports the following options:
 - **extractStacktrace** (true/false): Add stacktraces to the GELF message; default false (*optional*)
 - **addExtendedInformation** (true/false): Add extended information like Log4j's NDC/MDC; default false (*optional*)
 - **facility**: Facility which to use in the GELF message; default "gelf-java"
+
+Logging Handler
+---------------
+
+Configured via properties as a standard Handler like
+
+  handlers = org.graylog2.logging.GelfHandler
+
+  .level = ALL
+
+  org.graylog2.logging.GelfHandler.level = ALL
+  org.graylog2.logging.GelfHandler.graylogHost = syslog.example.com
+  #org.graylog2.logging.GelfHandler.graylogPort = 12201
+  #org.graylog2.logging.GelfHandler.extractStacktrace = true
+  #org.graylog2.logging.GelfHandler.additionalField.0 = foo=bah
+  #org.graylog2.logging.GelfHandler.additionalField.1 = foo2=bah2
+  #org.graylog2.logging.GelfHandler.facility = local0
+
+  .handlers=org.graylog2.logging.GelfHandler
 
 What is GELF
 ------------
