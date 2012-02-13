@@ -48,7 +48,7 @@ public class GelfMessageTest {
     @Test
     public void testAdditionalFields() throws Exception {
         GelfMessage message = new GelfMessage();
-        message.setTimestamp(1L);
+        message.setJavaTimestamp(1L);
         message.addField("one", "two").addField("three", 4).addField("five", 6.0).addField("seven",8);
 
         String json = message.toJson();
