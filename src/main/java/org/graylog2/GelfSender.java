@@ -1,66 +1,65 @@
 package org.graylog2;
 
 import java.io.IOException;
-import java.net.*;
-import java.util.List;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.SocketException;
+import java.nio.ByteBuffer;
+import java.nio.channels.DatagramChannel;
 
 public class GelfSender {
 
     private static final int DEFAULT_PORT = 12201;
 
-    private static final int PORT_MIN = 8000;
-    private static final int PORT_MAX = 8888;
 
     private InetAddress host;
     private int port;
-    private DatagramSocket socket;
+	private DatagramChannel channel;
 
-    public GelfSender(String host) throws UnknownHostException, SocketException {
+
+    public GelfSender(String host) throws IOException, SocketException {
         this(host, DEFAULT_PORT);
     }
 
-    public GelfSender(String host, int port) throws UnknownHostException, SocketException {
+    public GelfSender(String host, int port) throws IOException, SocketException {
         this.host = InetAddress.getByName(host);
         this.port = port;
-        this.socket = initiateSocket();
+		this.channel = initiateChannel();
     }
 
-    private DatagramSocket initiateSocket() throws SocketException {
-        int port = PORT_MIN;
+	private DatagramChannel initiateChannel() throws IOException
+	{
 
-        DatagramSocket resultingSocket = null;
-        boolean binded = false;
-        while (!binded) {
-            try {
-                resultingSocket = new DatagramSocket(port);
-                binded = true;
-            } catch (SocketException e) {
-                port++;
+		DatagramChannel resultingChannel = DatagramChannel.open();
+		resultingChannel.socket().bind(new InetSocketAddress(0));
+		resultingChannel.connect(new InetSocketAddress(this.host, this.port));
+		resultingChannel.configureBlocking(false);
 
-                if (port > PORT_MAX)
-                    throw e;
-            }
-        }
-        return resultingSocket;
+		return resultingChannel;
     }
 
     public boolean sendMessage(GelfMessage message) {
         return message.isValid() && sendDatagrams(message.toDatagrams());
     }
 
-    public boolean sendDatagrams(List<byte[]> bytesList) {
-        for (byte[] bytes : bytesList) {
-            DatagramPacket datagramPacket = new DatagramPacket(bytes, bytes.length, host, port);
+	public boolean sendDatagrams(ByteBuffer[] bytesList) {
             try {
-                socket.send(datagramPacket);
+				channel.write( bytesList);
             } catch (IOException e) {
                 return false;
             }
-        }
+
         return true;
     }
 
     public void close() {
-        socket.close();
+		try
+		{
+			channel.close();
+		}
+		catch ( IOException e )
+		{
+			e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+		}
     }
 }

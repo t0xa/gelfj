@@ -10,6 +10,7 @@ import org.graylog2.GelfSender;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
@@ -29,7 +30,7 @@ public class GelfAppenderTest {
     private GelfAppender gelfAppender;
 
     @Before
-    public void setUp() throws UnknownHostException, SocketException {
+    public void setUp() throws IOException {
         gelfSender = new TestGelfSender("localhost");
 
         gelfAppender = new GelfAppender() {
@@ -129,7 +130,7 @@ public class GelfAppenderTest {
 
         private GelfMessage lastMessage;
 
-        public TestGelfSender(String host) throws UnknownHostException, SocketException {
+        public TestGelfSender(String host) throws IOException, SocketException {
             super(host);
         }
 
