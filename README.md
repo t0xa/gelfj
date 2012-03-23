@@ -1,7 +1,7 @@
 GELFJ - A GELF Appender for Log4j and a GELF Handler for JDK Logging
 ====================================================================
 
-### WARNING: Latest version of this library is nöt compatible with graylog2-server < 0.9.6. 
+### WARNING: Latest version of this library is not compatible with graylog2-server < 0.9.6. 
 
 What is GELFJ
 -------------
