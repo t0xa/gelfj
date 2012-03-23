@@ -6,6 +6,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.zip.GZIPOutputStream;
@@ -16,13 +17,13 @@ public class GelfMessage {
     private static final String GELF_VERSION = "1.0";
     private static final byte[] GELF_CHUNKED_ID = new byte[]{0x1e, 0x0f};
     private static final int MAXIMUM_CHUNK_SIZE = 1420;
+    private static final BigDecimal TIME_DIVISOR = new BigDecimal(1000);
 
     private String version = GELF_VERSION;
     private String host;
     private byte[] hostBytes = lastFourAsciiBytes("none");
     private String shortMessage;
     private String fullMessage;
-    private Long timestamp;
     private long javaTimestamp;
     private String level;
     private String facility = "gelf-java";
@@ -39,7 +40,6 @@ public class GelfMessage {
         this.shortMessage = shortMessage;
         this.fullMessage = fullMessage;
         this.javaTimestamp = timestamp.getTime();
-        this.timestamp = javaTimestamp / 1000L;
         this.level = level;
     }
 
@@ -47,7 +47,6 @@ public class GelfMessage {
         this.shortMessage = shortMessage;
         this.fullMessage = fullMessage;
         this.javaTimestamp = timestamp;
-        this.timestamp = javaTimestamp / 1000L;
         this.level = level;
         this.line = line;
         this.file = file;
@@ -60,7 +59,7 @@ public class GelfMessage {
         map.put("host", getHost());
         map.put("short_message", getShortMessage());
         map.put("full_message", getFullMessage());
-        map.put("timestamp", getTimestamp().intValue());
+        map.put("timestamp", getTimestamp());
 
         map.put("level", getLevel());
         map.put("facility", getFacility());
@@ -171,16 +170,16 @@ public class GelfMessage {
         this.fullMessage = fullMessage;
     }
 
-    public Long getTimestamp() {
-        return timestamp;
+    public String getTimestamp() {
+        return new BigDecimal(javaTimestamp).divide(TIME_DIVISOR).toPlainString();
     }
 
     public Long getJavaTimestamp() {
         return javaTimestamp;
     }
 
-    public void setTimestamp(Long timestamp) {
-        this.timestamp = timestamp;
+    public void setJavaTimestamp(long javaTimestamp) {
+        this.javaTimestamp = javaTimestamp;
     }
 
     public String getLevel() {
