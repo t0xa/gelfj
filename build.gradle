@@ -13,12 +13,12 @@ repositories {
 }
 
 dependencies {
-  compile 'junit:junit:4.9'  
+  testCompile 'junit:junit:4.9'  
   compile "log4j:log4j:1.2.7@jar"
   compile "com.googlecode.json-simple:json-simple:1.1"
 }
 
-task libDir(dependsOn: configurations.runtime.buildArtifacts, type: Copy) {
+task libDir(dependsOn: assemble, type: Copy) {
   into('lib')
   from configurations.runtime
   from configurations.runtime.allArtifacts.file
