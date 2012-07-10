@@ -12,29 +12,22 @@ import java.lang.reflect.Method;
  */
 public class Log4jVersionChecker {
 
-    private static boolean hasGetTimeStamp = true;
     private static Method methodGetTimeStamp = null;
+
+    static {
+        Method[] declaredMethods = LoggingEvent.class.getDeclaredMethods();
+        for(Method m : declaredMethods) {
+            if (m.getName().equals("getTimeStamp")) {
+                methodGetTimeStamp = m;
+                break;
+            }
+        }
+    }
 
     public static long getTimeStamp(LoggingEvent event) {
 
-        long timeStamp = System.currentTimeMillis();
-
-        if(hasGetTimeStamp && methodGetTimeStamp == null) {
-
-            hasGetTimeStamp = false;
-
-            Method[] declaredMethods = event.getClass().getDeclaredMethods();
-            for(Method m : declaredMethods) {
-                if (m.getName().equals("getTimeStamp")) {
-                    methodGetTimeStamp = m;
-                    hasGetTimeStamp = true;
-
-                    break;
-                }
-            }
-        }
-
-        if(hasGetTimeStamp) {
+        long timeStamp = 0;
+        if(methodGetTimeStamp != null) {
 
             try {
                 timeStamp = (Long) methodGetTimeStamp.invoke(event);
@@ -45,6 +38,6 @@ public class Log4jVersionChecker {
             }
         }
 
-        return timeStamp;
+        return timeStamp == 0 ? System.currentTimeMillis() : timeStamp;
     }
 }
