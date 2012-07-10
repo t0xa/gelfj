@@ -34,8 +34,8 @@ public class GelfMessage {
     public GelfMessage() {
     }
 
-    public GelfMessage(String shortMessage, String fullMessage, Date timestamp, String level) {
-        this(shortMessage, fullMessage, timestamp.getTime(), level, null, null);
+    public GelfMessage(String shortMessage, String fullMessage, long timestamp, String level) {
+        this(shortMessage, fullMessage, timestamp, level, null, null);
     }
 
     public GelfMessage(String shortMessage, String fullMessage, Long timestamp, String level, String line, String file) {

@@ -180,7 +180,7 @@ public class GelfHandler
     final GelfMessage gelfMessage =
       new GelfMessage( shortMessage,
                        message,
-                       new Date( record.getMillis() ),
+                       record.getMillis(),
                        String.valueOf( levelToSyslogLevel( record.getLevel() ) ) );
     gelfMessage.addField( "SourceClassName", record.getSourceClassName() );
     gelfMessage.addField( "SourceMethodName", record.getSourceMethodName() );

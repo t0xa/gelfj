@@ -14,7 +14,7 @@ public class GelfMessageTest {
 
     @Test
     public void testAdditionalFieldsIds() throws Exception {
-        GelfMessage message = new GelfMessage("Short", "Long", new Date(), "1");
+        GelfMessage message = new GelfMessage("Short", "Long", System.currentTimeMillis(), "1");
         message.addField("id", "LOLCAT").addField("_id", "typos in my closet");
 
         String data = message.toJson();
@@ -29,7 +29,7 @@ public class GelfMessageTest {
         for (int i = 0; i < 15; i++) {
             longString += longString;
         }
-        GelfMessage message = new GelfMessage("Long", longString, new Date(), "1");
+        GelfMessage message = new GelfMessage("Long", longString, System.currentTimeMillis(), "1");
         List<byte[]> bytes2 = message.toDatagrams();
         assertEquals(2, bytes2.size());
         assertTrue(Arrays.equals(Arrays.copyOfRange(bytes2.get(0), 10, 11), new byte[] {0x00}));
@@ -40,7 +40,7 @@ public class GelfMessageTest {
 
     @Test
     public void testSimpleMessage() throws Exception {
-        GelfMessage message = new GelfMessage("Short", "Long", new Date(), "1");
+        GelfMessage message = new GelfMessage("Short", "Long", System.currentTimeMillis(), "1");
         List<byte[]> bytes = message.toDatagrams();
         assertEquals(1, bytes.size());
     }
