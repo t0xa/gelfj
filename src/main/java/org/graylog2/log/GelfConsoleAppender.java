@@ -29,6 +29,7 @@ public class GelfConsoleAppender extends ConsoleAppender implements GelfMessageP
     private boolean extractStacktrace;
     private boolean addExtendedInformation;
     private Map<String, String> fields;
+    private boolean locationInformation;
     
     // parent overrides.
     
@@ -64,6 +65,14 @@ public class GelfConsoleAppender extends ConsoleAppender implements GelfMessageP
 
     public void setAddExtendedInformation(boolean addExtendedInformation) {
         this.addExtendedInformation = addExtendedInformation;
+    }
+
+    public boolean isIncludeLocationInformation() {
+        return locationInformation;
+    }
+
+    public void setIncludeLocationInformation(boolean locationInformation) {
+        this.locationInformation = locationInformation;
     }
     
     public String getOriginHost() {
