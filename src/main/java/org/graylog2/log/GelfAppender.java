@@ -35,6 +35,7 @@ public class GelfAppender extends AppenderSkeleton implements GelfMessageProvide
     private String facility;
     private GelfSender gelfSender;
     private boolean extractStacktrace;
+    private boolean includeLocationInformation;
     private boolean addExtendedInformation;
     private Map<String, String> fields;
 
@@ -76,6 +77,14 @@ public class GelfAppender extends AppenderSkeleton implements GelfMessageProvide
 
     public void setExtractStacktrace(boolean extractStacktrace) {
         this.extractStacktrace = extractStacktrace;
+    }
+
+    public boolean isIncludeLocationInformation() {
+        return includeLocationInformation;
+    }
+
+    public void setIncludeLocationInformation(boolean includeLocationInformation) {
+        this.includeLocationInformation = includeLocationInformation;
     }
 
     public String getOriginHost() {

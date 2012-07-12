@@ -6,6 +6,7 @@ import java.util.Map;
 
 public interface GelfMessageProvider {
     public boolean isExtractStacktrace();
+    public boolean isIncludeLocationInformation();
     public String getOriginHost();
     public String getFacility();
     public Map<String, String> getFields();

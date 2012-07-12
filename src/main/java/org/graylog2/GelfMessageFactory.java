@@ -9,6 +9,7 @@ import org.graylog2.log.Log4jVersionChecker;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Date;
 import java.util.Map;
 
 public class GelfMessageFactory {
@@ -22,10 +23,6 @@ public class GelfMessageFactory {
     public static final GelfMessage makeMessage(LoggingEvent event, GelfMessageProvider provider) {
         long timeStamp = Log4jVersionChecker.getTimeStamp(event);
         Level level = event.getLevel();
-
-        LocationInfo locationInformation = event.getLocationInformation();
-        String file = locationInformation.getFileName();
-        String lineNumber = locationInformation.getLineNumber();
 
         String renderedMessage = event.getRenderedMessage();
         String shortMessage;
@@ -48,8 +45,18 @@ public class GelfMessageFactory {
             }
         }
         
-        GelfMessage gelfMessage = new GelfMessage(shortMessage, renderedMessage, timeStamp,
-                                                  String.valueOf(level.getSyslogEquivalent()), lineNumber, file);
+        GelfMessage gelfMessage;
+
+        if (provider.isIncludeLocationInformation()) {
+            LocationInfo locationInformation = event.getLocationInformation();
+            String file = locationInformation.getFileName();
+            String lineNumber = locationInformation.getLineNumber();
+
+            gelfMessage = new GelfMessage(shortMessage, renderedMessage, timeStamp, String.valueOf(level.getSyslogEquivalent()), lineNumber, file);
+        }
+        else {
+            gelfMessage =  new GelfMessage(shortMessage, renderedMessage, new Date(timeStamp), String.valueOf(level.getSyslogEquivalent()));
+        }
         
         if (provider.getOriginHost() != null) {
             gelfMessage.setHost(provider.getOriginHost());
