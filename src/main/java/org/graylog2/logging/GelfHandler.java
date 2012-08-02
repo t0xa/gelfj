@@ -1,5 +1,9 @@
 package org.graylog2.logging;
 
+import org.graylog2.GelfMessage;
+import org.graylog2.GelfSender;
+
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.InetAddress;
@@ -8,14 +12,7 @@ import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.ErrorManager;
-import java.util.logging.Filter;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.LogManager;
-import java.util.logging.LogRecord;
-import org.graylog2.GelfMessage;
-import org.graylog2.GelfSender;
+import java.util.logging.*;
 
 public class GelfHandler
   extends Handler
@@ -133,6 +130,10 @@ public class GelfHandler
       catch ( SocketException e )
       {
         reportError( "Socket exception", e, ErrorManager.WRITE_FAILURE );
+      }
+      catch ( IOException e )
+      {
+	      reportError( "IO exception", e, ErrorManager.WRITE_FAILURE );
       }
     }
     if ( null == gelfSender ||

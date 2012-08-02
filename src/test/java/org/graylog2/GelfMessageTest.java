@@ -3,9 +3,8 @@ package org.graylog2;
 import org.json.simple.JSONValue;
 import org.junit.Test;
 
-import java.util.Arrays;
+import java.nio.ByteBuffer;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 
 import static junit.framework.Assert.*;
@@ -30,19 +29,19 @@ public class GelfMessageTest {
             longString += longString;
         }
         GelfMessage message = new GelfMessage("Long", longString, new Date(), "1");
-        List<byte[]> bytes2 = message.toDatagrams();
-        assertEquals(2, bytes2.size());
-        assertTrue(Arrays.equals(Arrays.copyOfRange(bytes2.get(0), 10, 11), new byte[] {0x00}));
-        assertTrue(Arrays.equals(Arrays.copyOfRange(bytes2.get(0), 11, 12), new byte[] {0x02}));
-        assertTrue(Arrays.equals(Arrays.copyOfRange(bytes2.get(1), 10, 11), new byte[] {0x01}));
-        assertTrue(Arrays.equals(Arrays.copyOfRange(bytes2.get(1), 11, 12), new byte[] {0x02}));
+	    ByteBuffer[] bytes2 = message.toDatagrams();
+        assertEquals(2, bytes2.length);
+        assertTrue(bytes2[0].get(10) ==  (byte) 0x00);
+	    assertTrue(bytes2[0].get(11) == (byte) 0x02);
+	    assertTrue(bytes2[1].get(10) == (byte) 0x01);
+	    assertTrue(bytes2[1].get(11) == (byte) 0x02);
     }
 
     @Test
     public void testSimpleMessage() throws Exception {
         GelfMessage message = new GelfMessage("Short", "Long", new Date(), "1");
-        List<byte[]> bytes = message.toDatagrams();
-        assertEquals(1, bytes.size());
+        ByteBuffer[] bytes = message.toDatagrams();
+        assertEquals(1, bytes.length);
     }
 
     @Test
