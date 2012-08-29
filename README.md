@@ -63,6 +63,7 @@ GelfAppender supports the following options:
 - **originHost**: Name of the originating host; defaults to the local hostname (*optional*)
 - **extractStacktrace** (true/false): Add stacktraces to the GELF message; default false (*optional*)
 - **addExtendedInformation** (true/false): Add extended information like Log4j's NDC/MDC; default false (*optional*)
+- **includeLocation** (true/false): Include caller file name and line number. Log4j documentation warns that generating caller location information is extremely slow and should be avoided unless execution speed is not an issue; default true (*optional*)
 - **facility**: Facility which to use in the GELF message; default "gelf-java"
 
 Logging Handler
