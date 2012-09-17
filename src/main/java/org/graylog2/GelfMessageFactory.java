@@ -23,9 +23,13 @@ public class GelfMessageFactory {
         long timeStamp = Log4jVersionChecker.getTimeStamp(event);
         Level level = event.getLevel();
 
-        LocationInfo locationInformation = event.getLocationInformation();
-        String file = locationInformation.getFileName();
-        String lineNumber = locationInformation.getLineNumber();
+        String file = null;
+        String lineNumber = null;
+        if (provider.isIncludeLocation()) {
+            LocationInfo locationInformation = event.getLocationInformation();
+            file = locationInformation.getFileName();
+            lineNumber = locationInformation.getLineNumber();
+        }
 
         String renderedMessage = event.getRenderedMessage();
         String shortMessage;

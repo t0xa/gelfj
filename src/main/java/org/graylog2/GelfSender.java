@@ -1,15 +1,16 @@
 package org.graylog2;
 
 import java.io.IOException;
-import java.net.*;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.List;
 
 public class GelfSender {
 
     private static final int DEFAULT_PORT = 12201;
-
-    private static final int PORT_MIN = 8000;
-    private static final int PORT_MAX = 8888;
 
     private InetAddress host;
     private int port;
@@ -26,22 +27,7 @@ public class GelfSender {
     }
 
     private DatagramSocket initiateSocket() throws SocketException {
-        int port = PORT_MIN;
-
-        DatagramSocket resultingSocket = null;
-        boolean binded = false;
-        while (!binded) {
-            try {
-                resultingSocket = new DatagramSocket(port);
-                binded = true;
-            } catch (SocketException e) {
-                port++;
-
-                if (port > PORT_MAX)
-                    throw e;
-            }
-        }
-        return resultingSocket;
+        return new DatagramSocket(0);
     }
 
     public boolean sendMessage(GelfMessage message) {
