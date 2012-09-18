@@ -4,11 +4,13 @@ import org.json.simple.JSONValue;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.zip.GZIPOutputStream;
 
 public class GelfMessage {
@@ -76,21 +78,25 @@ public class GelfMessage {
         return JSONValue.toJSONString(map);
     }
 
-    public List<byte[]> toDatagrams() {
-        byte[] messageBytes = gzipMessage(toJson());
-        List<byte[]> datagrams = new ArrayList<byte[]>();
-        if (messageBytes.length > MAXIMUM_CHUNK_SIZE) {
-            sliceDatagrams(messageBytes, datagrams);
-        } else {
-            datagrams.add(messageBytes);
-        }
-        return datagrams;
-    }
+    public ByteBuffer[] toDatagrams() {
+		byte[] messageBytes = gzipMessage( toJson() );
+		ByteBuffer[] datagrams = new ByteBuffer[ messageBytes.length / MAXIMUM_CHUNK_SIZE + 1 ];
+		if ( messageBytes.length > MAXIMUM_CHUNK_SIZE ) {
+			sliceDatagrams( messageBytes, datagrams );
+		} else {
+			datagrams[0] = ByteBuffer.allocate( messageBytes.length );
+			datagrams[0].put( messageBytes );
+			datagrams[0].flip();
+		}
+		return datagrams;
+	}
 
-    private void sliceDatagrams(byte[] messageBytes, List<byte[]> datagrams) {
+
+	private void sliceDatagrams(byte[] messageBytes, ByteBuffer[] datagrams)
+	{
         int messageLength = messageBytes.length;
         byte[] messageId = ByteBuffer.allocate(8)
-            .putInt((int) System.currentTimeMillis())       // 4 least-significant-bytes of the time in millis
+            .putInt(getCurrentMillis())       // 4 least-significant-bytes of the time in millis
             .put(hostBytes)                                // 4 least-significant-bytes of the host
             .array();
 
@@ -102,9 +108,15 @@ public class GelfMessage {
             if (to >= messageLength) {
                 to = messageLength;
             }
-            byte[] datagram = concatByteArray(header, Arrays.copyOfRange(messageBytes, from, to));
-            datagrams.add(datagram);
+			byte[] datagram = concatByteArray( header, Arrays.copyOfRange( messageBytes, from, to ) );
+			datagrams[idx] = ByteBuffer.allocate( datagram.length );
+			datagrams[idx].put(datagram);
+			datagrams[idx].flip();
         }
+    }
+
+    public int getCurrentMillis() {
+        return (int) System.currentTimeMillis();
     }
 
     private byte[] gzipMessage(String message) {

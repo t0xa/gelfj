@@ -1,12 +1,5 @@
 package org.graylog2.log;
 
-import java.net.InetAddress;
-import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.spi.ErrorCode;
 import org.apache.log4j.spi.LoggingEvent;
@@ -15,6 +8,14 @@ import org.graylog2.GelfMessageFactory;
 import org.graylog2.GelfMessageProvider;
 import org.graylog2.GelfSender;
 import org.json.simple.JSONValue;
+
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
@@ -126,6 +127,8 @@ public class GelfAppender extends AppenderSkeleton implements GelfMessageProvide
             errorHandler.error("Unknown Graylog2 hostname:" + getGraylogHost(), e, ErrorCode.WRITE_FAILURE);
         } catch (SocketException e) {
             errorHandler.error("Socket exception", e, ErrorCode.WRITE_FAILURE);
+        } catch (IOException e) {
+	        errorHandler.error("IO exception", e, ErrorCode.WRITE_FAILURE);
         }
     }
 

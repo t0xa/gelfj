@@ -10,6 +10,7 @@ import org.graylog2.GelfSender;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
@@ -18,7 +19,6 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.*;
 
 /**
- *
  * @author Anton Yakimov
  * @author Jochen Schalanda
  */
@@ -29,7 +29,7 @@ public class GelfAppenderTest {
     private GelfAppender gelfAppender;
 
     @Before
-    public void setUp() throws UnknownHostException, SocketException {
+    public void setUp() throws IOException {
         gelfSender = new TestGelfSender("localhost");
 
         gelfAppender = new GelfAppender() {
@@ -50,7 +50,7 @@ public class GelfAppenderTest {
     public void ensureHostnameForMessage() {
 
         LoggingEvent event = new LoggingEvent(CLASS_NAME, Category.getInstance(GelfAppenderTest.class), 123L, Priority.INFO, "Das Auto",
-                                              new RuntimeException("LOL"));
+                new RuntimeException("LOL"));
         gelfAppender.append(event);
 
         assertThat("Message hostname", gelfSender.getLastMessage().getHost(), notNullValue());
@@ -129,7 +129,7 @@ public class GelfAppenderTest {
 
         private GelfMessage lastMessage;
 
-        public TestGelfSender(String host) throws UnknownHostException, SocketException {
+        public TestGelfSender(String host) throws IOException {
             super(host);
         }
 
