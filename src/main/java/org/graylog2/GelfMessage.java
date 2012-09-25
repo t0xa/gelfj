@@ -124,7 +124,13 @@ public class GelfMessage {
 
         try {
             GZIPOutputStream stream = new GZIPOutputStream(bos);
-            stream.write(message.getBytes());
+            byte[] bytes = null;
+            try {
+                bytes = message.getBytes("UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                throw new RuntimeException("No UTF-8 support available.", e);
+            }
+            stream.write(bytes);
             stream.finish();
             stream.close();
             byte[] zipped = bos.toByteArray();
