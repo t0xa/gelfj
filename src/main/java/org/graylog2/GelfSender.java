@@ -38,7 +38,9 @@ public class GelfSender {
 
 	public boolean sendDatagrams(ByteBuffer[] bytesList) {
             try {
-				channel.write(bytesList);
+				for (ByteBuffer buffer : bytesList) {
+                    channel.write(buffer);
+                }
             } catch (IOException e) {
                 return false;
             }
