@@ -78,7 +78,7 @@ public class GelfMessage {
         return JSONValue.toJSONString(map);
     }
 
-    public ByteBuffer[] toDatagrams() {
+    public ByteBuffer[] toBuffers() {
 		byte[] messageBytes = gzipMessage( toJson() );
 		ByteBuffer[] datagrams = new ByteBuffer[ messageBytes.length / MAXIMUM_CHUNK_SIZE + 1 ];
 		if ( messageBytes.length > MAXIMUM_CHUNK_SIZE ) {
@@ -91,6 +91,13 @@ public class GelfMessage {
 		return datagrams;
 	}
 
+    public ByteBuffer toBuffer() {
+		byte[] messageBytes = gzipMessage( toJson() );
+		ByteBuffer datagram = ByteBuffer.allocate( messageBytes.length );
+		datagram.put( messageBytes );
+		datagram.flip();
+		return datagram;
+	}
 
 	private void sliceDatagrams(byte[] messageBytes, ByteBuffer[] datagrams)
 	{
