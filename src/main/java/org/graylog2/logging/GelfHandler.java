@@ -13,6 +13,8 @@ import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.*;
+import org.graylog2.GelfTCPSender;
+import org.graylog2.GelfUDPSender;
 
 public class GelfHandler
         extends Handler
@@ -133,23 +135,35 @@ public class GelfHandler
         }
         if ( null == gelfSender )
         {
-            try
-            {
-                gelfSender = new GelfSender( graylogHost, graylogPort );
-            }
-            catch ( UnknownHostException e )
-            {
-                reportError( "Unknown Graylog2 hostname:" + graylogHost, e, ErrorManager.WRITE_FAILURE );
-            }
-            catch ( SocketException e )
-            {
-                reportError( "Socket exception", e, ErrorManager.WRITE_FAILURE );
-            }
-            catch ( IOException e )
-            {
-                reportError( "IO exception", e, ErrorManager.WRITE_FAILURE );
-            }
-        }
+			if (graylogHost == null) {
+				reportError("Graylog2 hostname is empty!", null, ErrorManager.WRITE_FAILURE);
+			} else {
+				try
+				{
+					if (graylogHost.startsWith("tcp:")) {
+						String tcpGraylogHost = graylogHost.substring(0, 4);
+						gelfSender = new GelfTCPSender(tcpGraylogHost, graylogPort);
+					} else if (graylogHost.startsWith("udp:")) {
+						String udpGraylogHost = graylogHost.substring(0, 4);
+						gelfSender = new GelfUDPSender(udpGraylogHost, graylogPort);
+					} else {
+						gelfSender = new GelfUDPSender(graylogHost, graylogPort);
+					}
+				}
+				catch ( UnknownHostException e )
+				{
+					reportError( "Unknown Graylog2 hostname:" + graylogHost, e, ErrorManager.WRITE_FAILURE );
+				}
+				catch ( SocketException e )
+				{
+					reportError( "Socket exception", e, ErrorManager.WRITE_FAILURE );
+				}
+				catch ( IOException e )
+				{
+					reportError( "IO exception", e, ErrorManager.WRITE_FAILURE );
+				}
+			}
+		}
         if ( null == gelfSender ||
                 !gelfSender.sendMessage( makeMessage( record ) ) )
         {
