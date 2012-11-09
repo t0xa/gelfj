@@ -29,7 +29,7 @@ public class GelfMessageTest {
             longString += longString;
         }
         GelfMessage message = new GelfMessage("Long", longString, new Date().getTime(), "1");
-        ByteBuffer[] bytes2 = message.toDatagrams();
+        ByteBuffer[] bytes2 = message.toBuffers();
         assertEquals(2, bytes2.length);
         assertTrue(bytes2[0].get(10) ==  (byte) 0x00);
         assertTrue(bytes2[0].get(11) == (byte) 0x02);
@@ -40,7 +40,7 @@ public class GelfMessageTest {
     @Test
     public void testSimpleMessage() throws Exception {
         GelfMessage message = new GelfMessage("Short", "Long", new Date().getTime(), "1");
-        ByteBuffer[] bytes = message.toDatagrams();
+        ByteBuffer[] bytes = message.toBuffers();
         assertEquals(1, bytes.length);
     }
 

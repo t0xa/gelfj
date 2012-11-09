@@ -1,14 +1,14 @@
 package org.graylog2.logging;
 
 import org.graylog2.GelfMessage;
-import org.graylog2.GelfSender;
+import org.graylog2.GelfUDPSender;
 
 import java.io.IOException;
 
 /**
  * @author lkmikkel
  */
-public class TestGelfHandlerSender extends GelfSender
+public class TestGelfHandlerSender extends GelfUDPSender
 {
     private static GelfMessage lastMessage;
 

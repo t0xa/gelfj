@@ -13,6 +13,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import org.graylog2.GelfUDPSender;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -125,7 +126,7 @@ public class GelfAppenderTest {
         assertEquals(gelfSender.getLastMessage().getAdditonalFields().get("logger"), CLASS_NAME);
     }
 
-    private class TestGelfSender extends GelfSender {
+    private class TestGelfSender extends GelfUDPSender {
 
         private GelfMessage lastMessage;
 
