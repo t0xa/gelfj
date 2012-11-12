@@ -16,6 +16,7 @@ import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import org.graylog2.*;
 
 /**
  *
@@ -121,15 +122,27 @@ public class GelfAppender extends AppenderSkeleton implements GelfMessageProvide
 
     @Override
     public void activateOptions() {
-        try {
-            gelfSender = new GelfSender(graylogHost, graylogPort);
-        } catch (UnknownHostException e) {
-            errorHandler.error("Unknown Graylog2 hostname:" + getGraylogHost(), e, ErrorCode.WRITE_FAILURE);
-        } catch (SocketException e) {
-            errorHandler.error("Socket exception", e, ErrorCode.WRITE_FAILURE);
-        } catch (IOException e) {
-	        errorHandler.error("IO exception", e, ErrorCode.WRITE_FAILURE);
-        }
+		if (graylogHost == null) {
+			errorHandler.error("Graylog2 hostname is empty!", null, ErrorCode.WRITE_FAILURE);
+		} else {
+			try {
+				if (graylogHost.startsWith("tcp:")) {
+					String tcpGraylogHost = graylogHost.substring(0, 4);
+					gelfSender = new GelfTCPSender(tcpGraylogHost, graylogPort);
+				} else if (graylogHost.startsWith("udp:")) {
+					String udpGraylogHost = graylogHost.substring(0, 4);
+					gelfSender = new GelfUDPSender(udpGraylogHost, graylogPort);
+				} else {
+					gelfSender = new GelfUDPSender(graylogHost, graylogPort);
+				}
+			} catch (UnknownHostException e) {
+				errorHandler.error("Unknown Graylog2 hostname:" + getGraylogHost(), e, ErrorCode.WRITE_FAILURE);
+			} catch (SocketException e) {
+				errorHandler.error("Socket exception", e, ErrorCode.WRITE_FAILURE);
+			} catch (IOException e) {
+				errorHandler.error("IO exception", e, ErrorCode.WRITE_FAILURE);
+			}
+		}
     }
 
     @Override
