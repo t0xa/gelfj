@@ -33,7 +33,7 @@ public class GelfSender {
     }
 
     public boolean sendMessage(GelfMessage message) {
-        return message.isValid() && sendDatagrams(message.toDatagrams());
+        return message.isValid() && sendDatagrams(message.toBuffers());
     }
 
 	public boolean sendDatagrams(ByteBuffer[] bytesList) {
