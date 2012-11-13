@@ -2,6 +2,7 @@ package org.graylog2;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.MDC;
+import org.apache.log4j.Layout;
 import org.apache.log4j.spi.LocationInfo;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.ThrowableInformation;
@@ -18,8 +19,8 @@ public class GelfMessageFactory {
     private static final String LOGGER_NDC = "loggerNdc";
     private static final String THREAD_NAME = "thread";
     private static final String JAVA_TIMESTAMP = "timestampMs";
-    
-    public static final GelfMessage makeMessage(LoggingEvent event, GelfMessageProvider provider) {
+
+    public static final GelfMessage makeMessage(Layout layout, LoggingEvent event, GelfMessageProvider provider) {
         long timeStamp = Log4jVersionChecker.getTimeStamp(event);
         Level level = event.getLevel();
 
@@ -31,7 +32,7 @@ public class GelfMessageFactory {
             lineNumber = locationInformation.getLineNumber();
         }
 
-        String renderedMessage = event.getRenderedMessage();
+        String renderedMessage = layout != null ? layout.format(event) : event.getRenderedMessage();
         String shortMessage;
 
         if (renderedMessage == null) {

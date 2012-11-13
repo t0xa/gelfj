@@ -147,7 +147,7 @@ public class GelfAppender extends AppenderSkeleton implements GelfMessageProvide
 
     @Override
     protected void append(LoggingEvent event) {
-        GelfMessage gelfMessage = GelfMessageFactory.makeMessage(event, this);
+        GelfMessage gelfMessage = GelfMessageFactory.makeMessage(layout, event, this);
 
         if(getGelfSender() == null || !getGelfSender().sendMessage(gelfMessage)) {
             errorHandler.error("Could not send GELF message");
@@ -163,6 +163,6 @@ public class GelfAppender extends AppenderSkeleton implements GelfMessageProvide
     }
 
     public boolean requiresLayout() {
-        return false;
+        return true;
     }
 }
