@@ -1,9 +1,7 @@
 package org.graylog2.log;
 
-import org.apache.log4j.Category;
-import org.apache.log4j.MDC;
-import org.apache.log4j.NDC;
-import org.apache.log4j.Priority;
+import org.apache.log4j.*;
+import org.apache.log4j.spi.ErrorHandler;
 import org.apache.log4j.spi.LoggingEvent;
 import org.graylog2.GelfMessage;
 import org.graylog2.GelfSender;
@@ -16,6 +14,7 @@ import java.net.UnknownHostException;
 import org.graylog2.GelfUDPSender;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.*;
 
@@ -126,6 +125,24 @@ public class GelfAppenderTest {
         assertEquals(gelfSender.getLastMessage().getAdditonalFields().get("logger"), CLASS_NAME);
     }
 
+    @Test
+    public void testTcpUdpUrls() {
+
+        GelfAppender testGelfAppender = new GelfAppender();
+        TestingEH testingEH = new TestingEH();
+        testGelfAppender.setErrorHandler(testingEH);
+
+        testGelfAppender.setGraylogHost("tcp:www.github.com");
+        testGelfAppender.activateOptions();
+
+        assertThat("No errors when using tcp: url", testingEH.getErrorMessage(), not(is("Unknown Graylog2 hostname:tcp:www.github.com")));
+
+        testGelfAppender.setGraylogHost("udp:www.github.com");
+        testGelfAppender.activateOptions();
+
+        assertThat("No errors when using udp: url", testingEH.getErrorMessage(), not(is("Unknown Graylog2 hostname:udp:www.github.com")));
+    }
+
     private class TestGelfSender extends GelfUDPSender {
 
         private GelfMessage lastMessage;
@@ -145,4 +162,43 @@ public class GelfAppenderTest {
         }
     }
 
+    private class TestingEH implements ErrorHandler {
+
+        private String errorMessage = "";
+
+        @Override
+        public void setLogger(Logger logger) {
+        }
+
+        @Override
+        public void error(String s, Exception e, int i) {
+            errorMessage = s;
+        }
+
+        @Override
+        public void error(String s) {
+            errorMessage = s;
+        }
+
+        @Override
+        public void error(String s, Exception e, int i, LoggingEvent loggingEvent) {
+            errorMessage = s;
+        }
+
+        @Override
+        public void setAppender(Appender appender) {
+        }
+
+        @Override
+        public void setBackupAppender(Appender appender) {
+        }
+
+        @Override
+        public void activateOptions() {
+        }
+
+        public String getErrorMessage() {
+            return errorMessage;
+        }
+    }
 }
