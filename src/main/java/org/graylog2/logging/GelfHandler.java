@@ -37,6 +37,7 @@ public class GelfHandler
         graylogHost = manager.getProperty( prefix + ".graylogHost" );
         final String port = manager.getProperty( prefix + ".graylogPort" );
         graylogPort = null == port ? 12201 : Integer.parseInt( port );
+        originHost = manager.getProperty( prefix + ".originHost" );
         extractStacktrace = "true".equalsIgnoreCase( manager.getProperty( prefix + ".extractStacktrace" ) );
         int fieldNumber = 0;
         fields = new HashMap<String, String>(  );
@@ -263,4 +264,23 @@ public class GelfHandler
         return syslogLevel;
     }
 
+    public void setExtractStacktrace(boolean extractStacktrace) {
+        this.extractStacktrace = extractStacktrace;
+    }
+
+    public void setGraylogPort(int graylogPort) {
+        this.graylogPort = graylogPort;
+    }
+
+    public void setOriginHost(String originHost) {
+        this.originHost = originHost;
+    }
+
+    public void setGraylogHost(String graylogHost) {
+        this.graylogHost = graylogHost;
+    }
+
+    public void setFacility(String facility) {
+        this.facility = facility;
+    }
 }
