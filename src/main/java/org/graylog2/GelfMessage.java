@@ -80,7 +80,13 @@ public class GelfMessage {
 
     public ByteBuffer[] toBuffers() {
 		byte[] messageBytes = gzipMessage( toJson() );
-		ByteBuffer[] datagrams = new ByteBuffer[ messageBytes.length / MAXIMUM_CHUNK_SIZE + 1 ];
+		// calculate the length of the datagrams array
+		int diagrams_length=messageBytes.length / MAXIMUM_CHUNK_SIZE;
+		// In case of a remainder, due to the integer division, add a extra datagram
+		if ( messageBytes.length % MAXIMUM_CHUNK_SIZE != 0 ) {
+			diagrams_length++;
+		}
+		ByteBuffer[] datagrams = new ByteBuffer[ diagrams_length ];
 		if ( messageBytes.length > MAXIMUM_CHUNK_SIZE ) {
 			sliceDatagrams( messageBytes, datagrams );
 		} else {
@@ -107,7 +113,8 @@ public class GelfMessage {
             .put(hostBytes)                                // 4 least-significant-bytes of the host
             .array();
 
-        int num = ((Double) Math.ceil((double) messageLength / MAXIMUM_CHUNK_SIZE)).intValue();
+        // Reuse length of datagrams array since this is supposed to be the correct number of datagrams
+        int num = datagrams.length;
         for (int idx = 0; idx < num; idx++) {
             byte[] header = concatByteArray(GELF_CHUNKED_ID, concatByteArray(messageId, new byte[]{(byte) idx, (byte) num}));
             int from = idx * MAXIMUM_CHUNK_SIZE;
