@@ -54,7 +54,8 @@ public class GelfMessage {
 
         map.put("version", getVersion());
         map.put("host", getHost());
-        map.put("short_message", getShortMessage());
+        String shortMsg = getShortMessage();
+        map.put("short_message", shortMsg != null ? shortMsg : "<empty>");
         map.put("full_message", getFullMessage());
         map.put("timestamp", getTimestamp());
 
@@ -260,7 +261,7 @@ public class GelfMessage {
     }
 
     public boolean isValid() {
-        return !isEmpty(version) && !isEmpty(host) && !isEmpty(shortMessage) && !isEmpty(facility);
+        return !isEmpty(version) && !isEmpty(host) && !isEmpty(facility);
     }
 
     public boolean isEmpty(String str) {
