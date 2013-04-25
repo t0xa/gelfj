@@ -71,4 +71,29 @@ public class GelfHandlerTest
 
         assertEquals( gelfSender.getLastMessage().getFullMessage(), "logging params: 1 param2" );
     }
+
+    @Test
+    public void testLogFormattingWithPercentParameters() {
+        Logger myLogger = Logger.getLogger("testLogFormattingWithPercentParameters");
+        myLogger.log( Level.FINE, "logging percent params: %d %s", new Object[] {new Integer(1), "param2"});
+
+        assertEquals( gelfSender.getLastMessage().getFullMessage(), "logging percent params: 1 param2" );
+    }
+
+    @Test
+    public void testLogFormattingWithPercentParameters_InvalidParameters() {
+        Logger myLogger = Logger.getLogger("testLogFormattingWithPercentParameters_InvalidParameters");
+        myLogger.log( Level.FINE, "logging percent params: %d %d", new Object[] {new Integer(1), "param2"});
+
+        assertEquals( gelfSender.getLastMessage().getFullMessage(), "logging percent params: %d %d" );
+    }
+
+    @Test
+    public void testNullLogWithParameters() {
+        Logger myLogger = Logger.getLogger("testNullLogWithParameters");
+        myLogger.log( Level.FINE, null, new Object[] {new Integer(1), "param2"});
+
+        assertEquals( gelfSender.getLastMessage().getFullMessage(), "" );
+    }
+
 }
