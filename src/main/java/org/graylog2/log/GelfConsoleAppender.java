@@ -98,7 +98,7 @@ public class GelfConsoleAppender extends ConsoleAppender implements GelfMessageP
 
     @Override
     protected void subAppend(LoggingEvent event) {
-        GelfMessage gelf = GelfMessageFactory.makeMessage(event, this);
+        GelfMessage gelf = GelfMessageFactory.makeMessage(layout, event, this);
         this.qw.write(gelf.toJson());
         this.qw.write(Layout.LINE_SEP);
 
