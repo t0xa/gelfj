@@ -2,6 +2,8 @@ package org.graylog2.logging;
 
 import org.graylog2.GelfMessage;
 import org.graylog2.GelfSender;
+import org.graylog2.GelfTCPSender;
+import org.graylog2.GelfUDPSender;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -11,10 +13,9 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.text.MessageFormat;
 import java.util.HashMap;
+import java.util.IllegalFormatConversionException;
 import java.util.Map;
 import java.util.logging.*;
-import org.graylog2.GelfTCPSender;
-import org.graylog2.GelfUDPSender;
 
 public class GelfHandler
         extends Handler
@@ -186,11 +187,25 @@ public class GelfHandler
     {
         String message = record.getMessage();
         Object[] parameters = record.getParameters();
+
+        if (message == null) message = "";
         if ( parameters != null && parameters.length > 0 )
         {
+            //by default, using {0}, {1}, etc. -> MessageFormat
             message = MessageFormat.format( message, parameters );
+
+            if(message.equals(record.getMessage())) {
+                //if the text is the same, assuming this is String.format type log (%s, %d, etc.)
+                try {
+                    message = String.format( message, parameters );
+                } catch (IllegalFormatConversionException e ) {
+                    //leaving message as it is to avoid compatibility problems
+                    message = record.getMessage();
+                } catch (NullPointerException e) {
+                    //ignore
+                }
+            }
         }
-        if (message == null) message = "";
 
         final String shortMessage;
         if ( message.length() > MAX_SHORT_MESSAGE_LENGTH )
