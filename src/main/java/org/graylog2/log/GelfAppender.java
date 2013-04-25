@@ -39,6 +39,7 @@ public class GelfAppender extends AppenderSkeleton implements GelfMessageProvide
         super();
     }
 
+    @SuppressWarnings("unchecked")
     public void setAdditionalFields(String additionalFields) {
         fields = (Map<String, String>) JSONValue.parse(additionalFields.replaceAll("'", "\""));
     }
@@ -94,7 +95,7 @@ public class GelfAppender extends AppenderSkeleton implements GelfMessageProvide
     }
 
     public void setOriginHost(String originHost) {
-        this.originHost = originHost;
+        GelfAppender.originHost = originHost;
     }
 
     public boolean isAddExtendedInformation() {
@@ -128,12 +129,12 @@ public class GelfAppender extends AppenderSkeleton implements GelfMessageProvide
 			try {
 				if (graylogHost.startsWith("tcp:")) {
 					String tcpGraylogHost = graylogHost.substring(4);
-					gelfSender = new GelfTCPSender(tcpGraylogHost, graylogPort);
+					gelfSender = getGelfTCPSender(tcpGraylogHost, graylogPort);
 				} else if (graylogHost.startsWith("udp:")) {
 					String udpGraylogHost = graylogHost.substring(4);
-					gelfSender = new GelfUDPSender(udpGraylogHost, graylogPort);
+					gelfSender = getGelfUDPSender(udpGraylogHost, graylogPort);
 				} else {
-					gelfSender = new GelfUDPSender(graylogHost, graylogPort);
+					gelfSender = getGelfUDPSender(graylogHost, graylogPort);
 				}
 			} catch (UnknownHostException e) {
 				errorHandler.error("Unknown Graylog2 hostname:" + getGraylogHost(), e, ErrorCode.WRITE_FAILURE);
@@ -143,6 +144,14 @@ public class GelfAppender extends AppenderSkeleton implements GelfMessageProvide
 				errorHandler.error("IO exception", e, ErrorCode.WRITE_FAILURE);
 			}
 		}
+    }
+
+    protected GelfUDPSender getGelfUDPSender(String udpGraylogHost, int graylogPort) throws IOException {
+        return new GelfUDPSender(udpGraylogHost, graylogPort);
+    }
+
+    protected GelfTCPSender getGelfTCPSender(String tcpGraylogHost, int graylogPort) throws IOException {
+        return new GelfTCPSender(tcpGraylogHost, graylogPort);
     }
 
     @Override

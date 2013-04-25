@@ -5,17 +5,17 @@ import org.apache.log4j.spi.ErrorHandler;
 import org.apache.log4j.spi.LoggingEvent;
 import org.graylog2.GelfMessage;
 import org.graylog2.GelfSender;
+import org.graylog2.GelfTCPSender;
+import org.graylog2.GelfUDPSender;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import org.graylog2.GelfUDPSender;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
 /**
@@ -46,11 +46,18 @@ public class GelfAppenderTest {
         };
     }
 
+    @After
+    public void tearDown() {
+        if (gelfAppender.isAddExtendedInformation()) {
+            NDC.clear();
+        }
+    }
+
     @Test
     public void ensureHostnameForMessage() {
 
-        LoggingEvent event = new LoggingEvent(CLASS_NAME, Category.getInstance(GelfAppenderTest.class), 123L, Priority.INFO, "Das Auto",
-                new RuntimeException("LOL"));
+        LoggingEvent event = new LoggingEvent(CLASS_NAME, Category.getInstance(GelfAppenderTest.class), 123L, Level.INFO, "Das Auto",
+                new RuntimeException("Volkswagen"));
         gelfAppender.append(event);
 
         assertThat("Message hostname", gelfSender.getLastMessage().getHost(), notNullValue());
@@ -63,7 +70,7 @@ public class GelfAppenderTest {
     @Test
     public void handleNullInAppend() {
 
-        LoggingEvent event = new LoggingEvent(CLASS_NAME, Category.getInstance(this.getClass()), 123L, Priority.INFO, null, new RuntimeException("LOL"));
+        LoggingEvent event = new LoggingEvent(CLASS_NAME, Category.getInstance(this.getClass()), 123L, Level.INFO, null, new RuntimeException("LOL"));
         gelfAppender.append(event);
 
         assertThat("Message short message", gelfSender.getLastMessage().getShortMessage(), notNullValue());
@@ -75,7 +82,7 @@ public class GelfAppenderTest {
 
         gelfAppender.setAddExtendedInformation(true);
 
-        LoggingEvent event = new LoggingEvent(CLASS_NAME, Category.getInstance(this.getClass()), 123L, Priority.INFO, "", new RuntimeException("LOL"));
+        LoggingEvent event = new LoggingEvent(CLASS_NAME, Category.getInstance(this.getClass()), 123L, Level.INFO, "", new RuntimeException("LOL"));
         MDC.put("foo", "bar");
 
         gelfAppender.append(event);
@@ -89,7 +96,7 @@ public class GelfAppenderTest {
 
         gelfAppender.setAddExtendedInformation(true);
 
-        LoggingEvent event = new LoggingEvent(CLASS_NAME, Category.getInstance(this.getClass()), 123L, Priority.INFO, "", new RuntimeException("LOL"));
+        LoggingEvent event = new LoggingEvent(CLASS_NAME, Category.getInstance(this.getClass()), 123L, Level.INFO, "", new RuntimeException("LOL"));
         NDC.push("Foobar");
 
         gelfAppender.append(event);
@@ -102,7 +109,7 @@ public class GelfAppenderTest {
 
         gelfAppender.setAddExtendedInformation(false);
 
-        LoggingEvent event = new LoggingEvent(CLASS_NAME, Category.getInstance(this.getClass()), 123L, Priority.INFO, "", new RuntimeException("LOL"));
+        LoggingEvent event = new LoggingEvent(CLASS_NAME, Category.getInstance(this.getClass()), 123L, Level.INFO, "", new RuntimeException("LOL"));
 
         MDC.put("foo", "bar");
         NDC.push("Foobar");
@@ -118,7 +125,7 @@ public class GelfAppenderTest {
 
         gelfAppender.setAddExtendedInformation(true);
 
-        LoggingEvent event = new LoggingEvent(CLASS_NAME, Category.getInstance(GelfAppenderTest.class), 123L, Priority.INFO, "Das Auto", new RuntimeException("LOL"));
+        LoggingEvent event = new LoggingEvent(CLASS_NAME, Category.getInstance(GelfAppenderTest.class), 123L, Level.INFO, "Das Auto", new RuntimeException("LOL"));
 
         gelfAppender.append(event);
 
@@ -128,19 +135,37 @@ public class GelfAppenderTest {
     @Test
     public void testTcpUdpUrls() {
 
-        GelfAppender testGelfAppender = new GelfAppender();
+        GelfAppender testGelfAppender = new GelfAppender() {
+
+            @Override
+            protected GelfUDPSender getGelfUDPSender(String udpGraylogHost, int port) throws IOException {
+                return new MockGelfUDPSender(udpGraylogHost, port);
+            }
+
+            @Override
+            protected GelfTCPSender getGelfTCPSender(String tcpGraylogHost, int port) throws IOException {
+                return new MockGelfTCPSender(tcpGraylogHost, port);
+            }
+
+        };
+
         TestingEH testingEH = new TestingEH();
         testGelfAppender.setErrorHandler(testingEH);
 
         testGelfAppender.setGraylogHost("tcp:www.github.com");
         testGelfAppender.activateOptions();
 
-        assertThat("No errors when using tcp: url", testingEH.getErrorMessage(), not(is("Unknown Graylog2 hostname:tcp:www.github.com")));
+        assertThat("No errors when using tcp: url", testingEH.getErrorMessage(), is(not("Unknown Graylog2 hostname:tcp:www.github.com")));
 
         testGelfAppender.setGraylogHost("udp:www.github.com");
         testGelfAppender.activateOptions();
 
-        assertThat("No errors when using udp: url", testingEH.getErrorMessage(), not(is("Unknown Graylog2 hostname:udp:www.github.com")));
+        assertThat("No errors when using udp: url", testingEH.getErrorMessage(), is(not("Unknown Graylog2 hostname:udp:www.github.com")));
+
+        testGelfAppender.setGraylogHost("www.github.com");
+        testGelfAppender.activateOptions();
+
+        assertThat("No errors when using udp: url", testingEH.getErrorMessage(), is(not("Unknown Graylog2 hostname:www.github.com")));
     }
 
     private class TestGelfSender extends GelfUDPSender {
@@ -153,9 +178,6 @@ public class GelfAppenderTest {
 
         @Override
         public boolean sendMessage(GelfMessage message) {
-            if (!message.isValid()) {
-              return false;
-            }
             this.lastMessage = message;
             return true;
         }
@@ -202,6 +224,25 @@ public class GelfAppenderTest {
 
         public String getErrorMessage() {
             return errorMessage;
+        }
+    }
+
+    private class MockGelfUDPSender extends GelfUDPSender {
+
+        private MockGelfUDPSender(String host, int port) throws IOException {
+            if (host.contains("udp:")) {
+                throw new UnknownHostException("udp: found in host");
+            }
+        }
+
+    }
+
+    private class MockGelfTCPSender extends GelfTCPSender {
+
+        private MockGelfTCPSender(String host, int port) throws IOException {
+            if (host.contains("tcp:")) {
+                throw new UnknownHostException("tcp: found in host");
+            }
         }
     }
 }

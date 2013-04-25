@@ -10,7 +10,10 @@ public class GelfUDPSender implements GelfSender {
 	private int port;
 	private DatagramChannel channel;
 
-	public GelfUDPSender(String host) throws IOException {
+    public GelfUDPSender() {
+    }
+
+    public GelfUDPSender(String host) throws IOException {
 		this(host, DEFAULT_PORT);
 	}
 

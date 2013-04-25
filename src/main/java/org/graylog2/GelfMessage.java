@@ -8,7 +8,6 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.zip.GZIPOutputStream;
@@ -54,19 +53,16 @@ public class GelfMessage {
 
         map.put("version", getVersion());
         map.put("host", getHost());
-        String shortMsg = getShortMessage();
-        map.put("short_message", shortMsg != null ? shortMsg : "<empty>");
+        map.put("short_message", getShortMessage());
         map.put("full_message", getFullMessage());
         map.put("timestamp", getTimestamp());
 
         map.put("level", getLevel());
         map.put("facility", getFacility());
-        if( null != getFile() )
-        {
+        if (null != getFile()) {
             map.put("file", getFile());
         }
-        if( null != getLine() )
-        {
+        if (null != getLine()) {
             map.put("line", getLine());
         }
 
@@ -80,39 +76,38 @@ public class GelfMessage {
     }
 
     public ByteBuffer[] toBuffers() {
-		byte[] messageBytes = gzipMessage( toJson() );
-		// calculate the length of the datagrams array
-		int diagrams_length=messageBytes.length / MAXIMUM_CHUNK_SIZE;
-		// In case of a remainder, due to the integer division, add a extra datagram
-		if ( messageBytes.length % MAXIMUM_CHUNK_SIZE != 0 ) {
-			diagrams_length++;
-		}
-		ByteBuffer[] datagrams = new ByteBuffer[ diagrams_length ];
-		if ( messageBytes.length > MAXIMUM_CHUNK_SIZE ) {
-			sliceDatagrams( messageBytes, datagrams );
-		} else {
-			datagrams[0] = ByteBuffer.allocate( messageBytes.length );
-			datagrams[0].put( messageBytes );
-			datagrams[0].flip();
-		}
-		return datagrams;
-	}
+        byte[] messageBytes = gzipMessage(toJson());
+        // calculate the length of the datagrams array
+        int diagrams_length = messageBytes.length / MAXIMUM_CHUNK_SIZE;
+        // In case of a remainder, due to the integer division, add a extra datagram
+        if (messageBytes.length % MAXIMUM_CHUNK_SIZE != 0) {
+            diagrams_length++;
+        }
+        ByteBuffer[] datagrams = new ByteBuffer[diagrams_length];
+        if (messageBytes.length > MAXIMUM_CHUNK_SIZE) {
+            sliceDatagrams(messageBytes, datagrams);
+        } else {
+            datagrams[0] = ByteBuffer.allocate(messageBytes.length);
+            datagrams[0].put(messageBytes);
+            datagrams[0].flip();
+        }
+        return datagrams;
+    }
 
     public ByteBuffer toBuffer() {
-		byte[] messageBytes = gzipMessage( toJson() );
-		ByteBuffer buffer = ByteBuffer.allocate( messageBytes.length );
-		buffer.put( messageBytes );
-		buffer.flip();
-		return buffer;
-	}
+        byte[] messageBytes = gzipMessage(toJson());
+        ByteBuffer buffer = ByteBuffer.allocate(messageBytes.length);
+        buffer.put(messageBytes);
+        buffer.flip();
+        return buffer;
+    }
 
-	private void sliceDatagrams(byte[] messageBytes, ByteBuffer[] datagrams)
-	{
+    private void sliceDatagrams(byte[] messageBytes, ByteBuffer[] datagrams) {
         int messageLength = messageBytes.length;
         byte[] messageId = ByteBuffer.allocate(8)
-            .putInt(getCurrentMillis())       // 4 least-significant-bytes of the time in millis
-            .put(hostBytes)                                // 4 least-significant-bytes of the host
-            .array();
+                .putInt(getCurrentMillis())       // 4 least-significant-bytes of the time in millis
+                .put(hostBytes)                                // 4 least-significant-bytes of the host
+                .array();
 
         // Reuse length of datagrams array since this is supposed to be the correct number of datagrams
         int num = datagrams.length;
@@ -123,10 +118,10 @@ public class GelfMessage {
             if (to >= messageLength) {
                 to = messageLength;
             }
-			byte[] datagram = concatByteArray( header, Arrays.copyOfRange( messageBytes, from, to ) );
-			datagrams[idx] = ByteBuffer.allocate( datagram.length );
-			datagrams[idx].put(datagram);
-			datagrams[idx].flip();
+            byte[] datagram = concatByteArray(header, Arrays.copyOfRange(messageBytes, from, to));
+            datagrams[idx] = ByteBuffer.allocate(datagram.length);
+            datagrams[idx].put(datagram);
+            datagrams[idx].flip();
         }
     }
 
@@ -139,7 +134,7 @@ public class GelfMessage {
 
         try {
             GZIPOutputStream stream = new GZIPOutputStream(bos);
-            byte[] bytes = null;
+            byte[] bytes;
             try {
                 bytes = message.getBytes("UTF-8");
             } catch (UnsupportedEncodingException e) {
@@ -183,7 +178,7 @@ public class GelfMessage {
     }
 
     public String getShortMessage() {
-        return shortMessage;
+        return !isEmpty(shortMessage) ? shortMessage : "<empty>";
     }
 
     public void setShortMessage(String shortMessage) {
@@ -261,7 +256,11 @@ public class GelfMessage {
     }
 
     public boolean isValid() {
-        return !isEmpty(version) && !isEmpty(host) && !isEmpty(facility);
+        return isShortOrFullMessagesExists() && !isEmpty(version) && !isEmpty(host) && !isEmpty(facility);
+    }
+
+    private boolean isShortOrFullMessagesExists() {
+        return !isEmpty(shortMessage) || !isEmpty(fullMessage);
     }
 
     public boolean isEmpty(String str) {

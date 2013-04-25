@@ -12,14 +12,16 @@ import java.io.StringWriter;
 import java.util.Map;
 
 public class GelfMessageFactory {
-    private static final int MAX_SHORT_MESSAGE_LENGTH = 250;
-    private static final String ORIGIN_HOST_KEY = "originHost";
-    private static final String LOGGER_NAME = "logger";
-    private static final String LOGGER_NDC = "loggerNdc";
-    private static final String THREAD_NAME = "thread";
-    private static final String JAVA_TIMESTAMP = "timestampMs";
-    
-    public static final GelfMessage makeMessage(LoggingEvent event, GelfMessageProvider provider) {
+
+    public static final int MAX_SHORT_MESSAGE_LENGTH = 250;
+    public static final String ORIGIN_HOST_KEY = "originHost";
+    public static final String LOGGER_NAME = "logger";
+    public static final String LOGGER_NDC = "loggerNdc";
+    public static final String THREAD_NAME = "thread";
+    public static final String JAVA_TIMESTAMP = "timestampMs";
+
+    @SuppressWarnings("unchecked")
+    public static GelfMessage makeMessage(LoggingEvent event, GelfMessageProvider provider) {
         long timeStamp = Log4jVersionChecker.getTimeStamp(event);
         Level level = event.getLevel();
 
@@ -83,7 +85,6 @@ public class GelfMessageFactory {
 
             if(mdc != null) {
                 for(Map.Entry<String, Object> entry : mdc.entrySet()) {
-
                     gelfMessage.addField(entry.getKey(), entry.getValue().toString());
                 }
             }
@@ -92,7 +93,6 @@ public class GelfMessageFactory {
             String ndc = event.getNDC();
 
             if(ndc != null) {
-
                 gelfMessage.addField(LOGGER_NDC, ndc);
             }
         }

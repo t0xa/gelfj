@@ -8,22 +8,20 @@ import java.io.IOException;
 /**
  * @author lkmikkel
  */
-public class TestGelfHandlerSender extends GelfUDPSender
-{
+public class MockGelfHandlerSender extends GelfUDPSender {
     private static GelfMessage lastMessage;
 
-    public TestGelfHandlerSender() throws IOException
-    {
+    public MockGelfHandlerSender() throws IOException {
         super("localhost");
     }
 
     @Override
     public boolean sendMessage(GelfMessage message) {
-        this.lastMessage = message;
+        lastMessage = message;
         return true;
     }
 
     public GelfMessage getLastMessage() {
-        return this.lastMessage;
+        return lastMessage;
     }
 }

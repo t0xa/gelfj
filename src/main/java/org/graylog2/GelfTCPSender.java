@@ -9,9 +9,8 @@ public class GelfTCPSender implements GelfSender {
 	private int port;
 	private Socket socket;
 
-	public GelfTCPSender(String host) throws IOException {
-		this(host, DEFAULT_PORT);
-	}
+    public GelfTCPSender() {
+    }
 
 	public GelfTCPSender(String host, int port) throws IOException {
 		this.host = InetAddress.getByName(host);

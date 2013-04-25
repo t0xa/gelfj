@@ -18,11 +18,11 @@ import static org.junit.Assert.*;
  */
 public class GelfHandlerTest
 {
-    private TestGelfHandlerSender gelfSender;
+    private MockGelfHandlerSender gelfSender;
 
     @Before
     public void setUp() throws IOException {
-        gelfSender = new TestGelfHandlerSender();
+        gelfSender = new MockGelfHandlerSender();
 
         InputStream is = GelfHandlerTest.class.getResourceAsStream("logging-test.properties");
         LogManager.getLogManager().readConfiguration(is);
@@ -75,7 +75,7 @@ public class GelfHandlerTest
     @Test
     public void testLogFormattingWithPercentParameters() {
         Logger myLogger = Logger.getLogger("testLogFormattingWithPercentParameters");
-        myLogger.log( Level.FINE, "logging percent params: %d %s", new Object[] {new Integer(1), "param2"});
+        myLogger.log( Level.FINE, "logging percent params: %d %s", new Object[] {1, "param2"});
 
         assertEquals( gelfSender.getLastMessage().getFullMessage(), "logging percent params: 1 param2" );
     }
@@ -83,7 +83,7 @@ public class GelfHandlerTest
     @Test
     public void testLogFormattingWithPercentParameters_InvalidParameters() {
         Logger myLogger = Logger.getLogger("testLogFormattingWithPercentParameters_InvalidParameters");
-        myLogger.log( Level.FINE, "logging percent params: %d %d", new Object[] {new Integer(1), "param2"});
+        myLogger.log( Level.FINE, "logging percent params: %d %d", new Object[] {1, "param2"});
 
         assertEquals( gelfSender.getLastMessage().getFullMessage(), "logging percent params: %d %d" );
     }
@@ -91,7 +91,7 @@ public class GelfHandlerTest
     @Test
     public void testNullLogWithParameters() {
         Logger myLogger = Logger.getLogger("testNullLogWithParameters");
-        myLogger.log( Level.FINE, null, new Object[] {new Integer(1), "param2"});
+        myLogger.log( Level.FINE, null, new Object[] {1, "param2"});
 
         assertEquals( gelfSender.getLastMessage().getFullMessage(), "" );
     }
