@@ -153,6 +153,9 @@ public class GelfAppenderTest {
 
         @Override
         public boolean sendMessage(GelfMessage message) {
+            if (!message.isValid()) {
+              return false;
+            }
             this.lastMessage = message;
             return true;
         }
