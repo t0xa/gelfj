@@ -95,7 +95,18 @@ public class GelfMessage {
     }
 
     public ByteBuffer toBuffer() {
-        byte[] messageBytes = gzipMessage(toJson());
+        byte[] messageBytes;
+        try {
+            // Do not use GZIP, as the headers will contain \0 bytes
+            // graylog2-server uses \0 as a delimiter for TCP frames
+            // see: https://github.com/Graylog2/graylog2-server/issues/127
+            String json = toJson() ;
+            json += '\0';
+            messageBytes = json.getBytes("UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException("No UTF-8 support available.", e);
+        }
+
         ByteBuffer buffer = ByteBuffer.allocate(messageBytes.length);
         buffer.put(messageBytes);
         buffer.flip();
