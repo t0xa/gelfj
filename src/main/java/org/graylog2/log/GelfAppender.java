@@ -32,7 +32,7 @@ public class GelfAppender extends AppenderSkeleton implements GelfMessageProvide
     private String amqpURI;
     private String amqpExchangeName;
     private String amqpRoutingKey;
-    private Integer amqpMaxRetries;
+    private int amqpMaxRetries = 0;
     private static String originHost;
     private int graylogPort = 12201;
     private String facility;
@@ -91,11 +91,11 @@ public class GelfAppender extends AppenderSkeleton implements GelfMessageProvide
         this.amqpRoutingKey = amqpRoutingKey;
     }
 
-    public Integer getAmqpMaxRetries() {
+    public int getAmqpMaxRetries() {
         return amqpMaxRetries;
     }
 
-    public void setAmqpMaxRetries(Integer amqpMaxRetries) {
+    public void setAmqpMaxRetries(int amqpMaxRetries) {
         this.amqpMaxRetries = amqpMaxRetries;
     }
 

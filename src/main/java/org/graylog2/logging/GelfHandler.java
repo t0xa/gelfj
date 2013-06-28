@@ -30,7 +30,7 @@ public class GelfHandler
     private String amqpURI;
     private String amqpExchangeName;
     private String amqpRoutingKey;
-    private Integer amqpMaxRetries;
+    private int amqpMaxRetries;
     private String originHost;
     private int graylogPort;
     private String facility;
@@ -71,7 +71,7 @@ public class GelfHandler
         amqpExchangeName = manager.getProperty( prefix + ".amqpExchangeName" );
         amqpRoutingKey = manager.getProperty( prefix + ".amqpRoutingKey" );
         String maxRetries = manager.getProperty( prefix + ".amqpMaxRetries" );
-        amqpMaxRetries = maxRetries == null ? null : Integer.valueOf(maxRetries);
+        amqpMaxRetries = maxRetries == null ? 0 : Integer.valueOf(maxRetries);
 
         final String level = manager.getProperty( prefix + ".level" );
         if ( null != level )
