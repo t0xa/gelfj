@@ -4,13 +4,17 @@ import org.graylog2.GelfMessage;
 import org.graylog2.GelfSender;
 import org.graylog2.GelfTCPSender;
 import org.graylog2.GelfUDPSender;
+import org.graylog2.GelfAMQPSender;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.IllegalFormatConversionException;
@@ -23,6 +27,10 @@ public class GelfHandler
     private static final int MAX_SHORT_MESSAGE_LENGTH = 250;
 
     private String graylogHost;
+    private String amqpURI;
+    private String amqpExchangeName;
+    private String amqpRoutingKey;
+    private Integer amqpMaxRetries;
     private String originHost;
     private int graylogPort;
     private String facility;
@@ -59,6 +67,11 @@ public class GelfHandler
         }
         facility = manager.getProperty( prefix + ".facility" );
 
+        amqpURI = manager.getProperty( prefix + ".amqpURI" );
+        amqpExchangeName = manager.getProperty( prefix + ".amqpExchangeName" );
+        amqpRoutingKey = manager.getProperty( prefix + ".amqpRoutingKey" );
+        String maxRetries = manager.getProperty( prefix + ".amqpMaxRetries" );
+        amqpMaxRetries = maxRetries == null ? null : Integer.valueOf(maxRetries);
 
         final String level = manager.getProperty( prefix + ".level" );
         if ( null != level )
@@ -137,35 +150,45 @@ public class GelfHandler
         }
         if ( null == gelfSender )
         {
-			if (graylogHost == null) {
-				reportError("Graylog2 hostname is empty!", null, ErrorManager.WRITE_FAILURE);
-			} else {
-				try
-				{
-					if (graylogHost.startsWith("tcp:")) {
-						String tcpGraylogHost = graylogHost.substring(0, 4);
-						gelfSender = new GelfTCPSender(tcpGraylogHost, graylogPort);
-					} else if (graylogHost.startsWith("udp:")) {
-						String udpGraylogHost = graylogHost.substring(0, 4);
-						gelfSender = new GelfUDPSender(udpGraylogHost, graylogPort);
-					} else {
-						gelfSender = new GelfUDPSender(graylogHost, graylogPort);
-					}
-				}
-				catch ( UnknownHostException e )
-				{
-					reportError( "Unknown Graylog2 hostname:" + graylogHost, e, ErrorManager.WRITE_FAILURE );
-				}
-				catch ( SocketException e )
-				{
-					reportError( "Socket exception", e, ErrorManager.WRITE_FAILURE );
-				}
-				catch ( IOException e )
-				{
-					reportError( "IO exception", e, ErrorManager.WRITE_FAILURE );
-				}
-			}
-		}
+            if (graylogHost == null && amqpURI == null) {
+                reportError("Graylog2 hostname and amqp uri are empty!", null, ErrorManager.WRITE_FAILURE);
+            } else if (graylogHost != null && amqpURI != null) {
+                reportError("Graylog2 hostname and amqp uri are both informed!", null, ErrorManager.WRITE_FAILURE);
+            } else {
+                try
+                {
+                    if (graylogHost.startsWith("tcp:")) {
+                        String tcpGraylogHost = graylogHost.substring(0, 4);
+                        gelfSender = new GelfTCPSender(tcpGraylogHost, graylogPort);
+                    } else if (graylogHost.startsWith("udp:")) {
+                        String udpGraylogHost = graylogHost.substring(0, 4);
+                        gelfSender = new GelfUDPSender(udpGraylogHost, graylogPort);
+                    } else if (amqpURI != null) {
+                        gelfSender = new GelfAMQPSender(amqpURI, amqpExchangeName, amqpRoutingKey, amqpMaxRetries);
+                    } else {
+                        gelfSender = new GelfUDPSender(graylogHost, graylogPort);
+                    }
+                }
+                catch ( UnknownHostException e )
+                {
+                    reportError( "Unknown Graylog2 hostname:" + graylogHost, e, ErrorManager.WRITE_FAILURE );
+                }
+                catch ( SocketException e )
+                {
+                    reportError( "Socket exception", e, ErrorManager.WRITE_FAILURE );
+                }
+                catch ( IOException e )
+                {
+                    reportError( "IO exception", e, ErrorManager.WRITE_FAILURE );
+                } catch (URISyntaxException e) {
+                    reportError("AMQP uri exception", e, ErrorManager.WRITE_FAILURE );
+                } catch (NoSuchAlgorithmException e) {
+                    reportError("AMQP algorithm exception", e, ErrorManager.WRITE_FAILURE );
+                } catch (KeyManagementException e) {
+                    reportError("AMQP key exception", e, ErrorManager.WRITE_FAILURE );
+                }
+            }
+        }
         if ( null == gelfSender ||
                 !gelfSender.sendMessage( makeMessage( record ) ) )
         {

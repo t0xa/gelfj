@@ -33,7 +33,7 @@ public class GelfUDPSender implements GelfSender {
 	}
 
 	public boolean sendMessage(GelfMessage message) {
-		return message.isValid() && sendDatagrams(message.toBuffers());
+		return message.isValid() && sendDatagrams(message.toUDPBuffers());
 	}
 
 	private boolean sendDatagrams(ByteBuffer[] bytesList) {

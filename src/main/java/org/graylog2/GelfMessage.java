@@ -75,7 +75,7 @@ public class GelfMessage {
         return JSONValue.toJSONString(map);
     }
 
-    public ByteBuffer[] toBuffers() {
+    public ByteBuffer[] toUDPBuffers() {
         byte[] messageBytes = gzipMessage(toJson());
         // calculate the length of the datagrams array
         int diagrams_length = messageBytes.length / MAXIMUM_CHUNK_SIZE;
@@ -94,7 +94,7 @@ public class GelfMessage {
         return datagrams;
     }
 
-    public ByteBuffer toBuffer() {
+    public ByteBuffer toTCPBuffer() {
         byte[] messageBytes;
         try {
             // Do not use GZIP, as the headers will contain \0 bytes
@@ -107,6 +107,14 @@ public class GelfMessage {
             throw new RuntimeException("No UTF-8 support available.", e);
         }
 
+        ByteBuffer buffer = ByteBuffer.allocate(messageBytes.length);
+        buffer.put(messageBytes);
+        buffer.flip();
+        return buffer;
+    }
+
+    public ByteBuffer toAMQPBuffer() {
+        byte[] messageBytes = gzipMessage(toJson());
         ByteBuffer buffer = ByteBuffer.allocate(messageBytes.length);
         buffer.put(messageBytes);
         buffer.flip();
