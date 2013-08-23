@@ -4,18 +4,38 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <parent>
+        <groupId>org.sonatype.oss</groupId>
+        <artifactId>oss-parent</artifactId>
+        <version>7</version>
+    </parent>
+
+    <scm>
+        <connection>scm:git:git@github.com:t0xa/gelfj.git</connection>
+        <developerConnection>scm:git:git@github.com:t0xa/gelfj.git</developerConnection>
+        <url>git@github.com:t0xa/gelfj.git</url>
+    </scm>
+
     <groupId>org.graylog2</groupId>
     <artifactId>gelfj</artifactId>
-    <version>1.0.2</version>
+    <version>1.1</version>
     <packaging>jar</packaging>
-
     <name>gelfj</name>
     <description>GELF implementation in Java and log4j appender without any dependencies.</description>
     <url>https://github.com/t0xa/gelfj</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <java.version>1.6</java.version>
     </properties>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>http://opensource.org/licenses/MIT</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
 
     <dependencies>
         <dependency>
@@ -47,6 +67,51 @@
                     <target>1.6</target>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>2.2.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.9</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
+
+    <developers>
+        <developer>
+            <id>antonyakimov</id>
+            <name>Anton Yakimov</name>
+            <email>anton@tds.lv</email>
+        </developer>
+    </developers>
+
+    <issueManagement>
+        <system>GitHub Issues</system>
+        <url>https://github.com/t0xa/gelfj/issues</url>
+    </issueManagement>
+
+    <ciManagement>
+        <system>Travis CI</system>
+        <url>https://travis-ci.org/Graylog2/graylog2-server</url>
+    </ciManagement>
+
 </project>
