@@ -1,5 +1,6 @@
 package org.graylog2;
 
+import org.apache.log4j.Layout;
 import org.apache.log4j.Level;
 import org.apache.log4j.MDC;
 import org.apache.log4j.spi.LocationInfo;
@@ -13,15 +14,15 @@ import java.util.Map;
 
 public class GelfMessageFactory {
 
-    public static final int MAX_SHORT_MESSAGE_LENGTH = 250;
-    public static final String ORIGIN_HOST_KEY = "originHost";
-    public static final String LOGGER_NAME = "logger";
-    public static final String LOGGER_NDC = "loggerNdc";
-    public static final String THREAD_NAME = "thread";
-    public static final String JAVA_TIMESTAMP = "timestampMs";
+    private static final int MAX_SHORT_MESSAGE_LENGTH = 250;
+    private static final String ORIGIN_HOST_KEY = "originHost";
+    private static final String LOGGER_NAME = "logger";
+    private static final String LOGGER_NDC = "loggerNdc";
+    private static final String THREAD_NAME = "thread";
+    private static final String JAVA_TIMESTAMP = "timestampMs";
 
     @SuppressWarnings("unchecked")
-    public static GelfMessage makeMessage(LoggingEvent event, GelfMessageProvider provider) {
+    public static GelfMessage makeMessage(Layout layout, LoggingEvent event, GelfMessageProvider provider) {
         long timeStamp = Log4jVersionChecker.getTimeStamp(event);
         Level level = event.getLevel();
 
@@ -33,7 +34,7 @@ public class GelfMessageFactory {
             lineNumber = locationInformation.getLineNumber();
         }
 
-        String renderedMessage = event.getRenderedMessage();
+        String renderedMessage = layout != null ? layout.format(event) : event.getRenderedMessage();
         String shortMessage;
 
         if (renderedMessage == null) {
@@ -46,17 +47,16 @@ public class GelfMessageFactory {
                 renderedMessage += "\n\r" + extractStacktrace(throwableInformation);
             }
         }
-        
+
         if (renderedMessage.length() > MAX_SHORT_MESSAGE_LENGTH) {
             shortMessage = renderedMessage.substring(0, MAX_SHORT_MESSAGE_LENGTH - 1);
-        }
-        else {
+        } else {
             shortMessage = renderedMessage;
         }
-        
+
         GelfMessage gelfMessage = new GelfMessage(shortMessage, renderedMessage, timeStamp,
-                                                  String.valueOf(level.getSyslogEquivalent()), lineNumber, file);
-        
+                String.valueOf(level.getSyslogEquivalent()), lineNumber, file);
+
         if (provider.getOriginHost() != null) {
             gelfMessage.setHost(provider.getOriginHost());
         }
@@ -83,8 +83,8 @@ public class GelfMessageFactory {
             // Get MDC and add a GELF field for each key/value pair
             Map<String, Object> mdc = MDC.getContext();
 
-            if(mdc != null) {
-                for(Map.Entry<String, Object> entry : mdc.entrySet()) {
+            if (mdc != null) {
+                for (Map.Entry<String, Object> entry : mdc.entrySet()) {
                     gelfMessage.addField(entry.getKey(), entry.getValue().toString());
                 }
             }
@@ -92,14 +92,14 @@ public class GelfMessageFactory {
             // Get NDC and add a GELF field
             String ndc = event.getNDC();
 
-            if(ndc != null) {
+            if (ndc != null) {
                 gelfMessage.addField(LOGGER_NDC, ndc);
             }
         }
 
         return gelfMessage;
     }
-    
+
     private static String extractStacktrace(ThrowableInformation throwableInformation) {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
