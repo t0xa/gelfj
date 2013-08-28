@@ -143,10 +143,10 @@ public class GelfHandler
 				try
 				{
 					if (graylogHost.startsWith("tcp:")) {
-						String tcpGraylogHost = graylogHost.substring(0, 4);
+						String tcpGraylogHost = graylogHost.substring(4, graylogHost.length());
 						gelfSender = new GelfTCPSender(tcpGraylogHost, graylogPort);
 					} else if (graylogHost.startsWith("udp:")) {
-						String udpGraylogHost = graylogHost.substring(0, 4);
+						String udpGraylogHost = graylogHost.substring(4, graylogHost.length());
 						gelfSender = new GelfUDPSender(udpGraylogHost, graylogPort);
 					} else {
 						gelfSender = new GelfUDPSender(graylogHost, graylogPort);
