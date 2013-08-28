@@ -1,6 +1,16 @@
 Gelfj - Changelog
 =================
 
+Release 1.1.1
+-------------
+
+2013-08-29
+
+   DEF: (@GBT) Issue #62: FIX when graylogHost starts with tcp: or udp:
+
+   ENH: (@h0nIg) Issue #52: Added log4j layout support
+
+
 Release 1.1
 -----------
 
