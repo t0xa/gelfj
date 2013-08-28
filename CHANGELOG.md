@@ -1,6 +1,12 @@
 Gelfj - Changelog
 =================
 
+Release 1.1
+-----------
+
+2013-08-29
+
+   ENH: (@twinforces) Issue #18: Two years old (sic) issue about maven. Thanks to @twinforces, @lennartkoopmann and @gilesw. Closes Issues #51 and #57.
 
 Release 1.0.2
 -------------

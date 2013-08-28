@@ -17,7 +17,7 @@
 
     <groupId>org.graylog2</groupId>
     <artifactId>gelfj</artifactId>
-    <version>1.2-SNAPSHOT</version>
+    <version>1.1.1-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>gelfj</name>
     <description>GELF implementation in Java and log4j appender without any dependencies.</description>
