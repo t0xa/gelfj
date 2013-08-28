@@ -12,7 +12,7 @@
         <connection>scm:git:git@github.com:t0xa/gelfj.git</connection>
         <developerConnection>scm:git:git@github.com:t0xa/gelfj.git</developerConnection>
         <url>git@github.com:t0xa/gelfj.git</url>
-    <tag>HEAD</tag>
+      <tag>HEAD</tag>
   </scm>
 
     <groupId>org.graylog2</groupId>
