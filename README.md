@@ -22,6 +22,8 @@ What is GELFJ
 
 It's very simple GELF implementation in pure Java with the Log4j appender and JDK Logging Handler. It supports chunked messages which allows you to send large log messages (stacktraces, environment variables, additional fields, etc.) to a [Graylog2](http://www.graylog2.org/) server.
 
+Following transports are supported:
+
  * TCP
  * UDP
  * AMQP
