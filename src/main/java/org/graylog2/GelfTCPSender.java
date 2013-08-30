@@ -29,7 +29,7 @@ public class GelfTCPSender implements GelfSender {
 				socket = new Socket(host, port);
 			}
 
-			socket.getOutputStream().write(message.toBuffer().array());
+			socket.getOutputStream().write(message.toTCPBuffer().array());
 
 			return true;
 		} catch (IOException e) {
