@@ -66,6 +66,19 @@ Or, in the log4j.properties format:
     # Send all INFO logs to graylog2
     log4j.rootLogger=INFO, graylog2
 
+AMQP Configuration:
+
+    log4j.appender.graylog2=org.graylog2.log.GelfAppender
+    log4j.appender.graylog2.amqpURI=amqp://amqp.address.com
+    log4j.appender.graylog2.amqpExchangeName=messages
+    log4j.appender.graylog2.amqpRoutingKey=gelfudp
+    log4j.appender.graylog2.amqpMaxRetries=5
+    log4j.appender.graylog2.facility=test-application
+    log4j.appender.graylog2.layout=org.apache.log4j.PatternLayout
+    log4j.appender.graylog2.layout.ConversionPattern=%d{HH:mm:ss,SSS} %-5p [%t] [%c{1}] - %m%n
+    log4j.appender.graylog2.additionalFields={'environment': 'DEV', 'application': 'MyAPP'}
+    log4j.appender.graylog2.extractStacktrace=true
+    log4j.appender.graylog2.addExtendedInformation=true
 
 Options
 -------
@@ -79,25 +92,29 @@ GelfAppender supports the following options:
 - **addExtendedInformation** (true/false): Add extended information like Log4j's NDC/MDC; default false (*optional*)
 - **includeLocation** (true/false): Include caller file name and line number. Log4j documentation warns that generating caller location information is extremely slow and should be avoided unless execution speed is not an issue; default true (*optional*)
 - **facility**: Facility which to use in the GELF message; default "gelf-java"
+- **amqpURI**: AMQP URI (*required when using AMQP integration*)
+- **amqpExchangeName**: AMQP Exchange name - should be the same as setup in graylog2-radio (*required when using AMQP integration*)
+- **amqpRoutingKey**: AMQP Routing key - should be the same as setup in graylog2-radio (*required when using AMQP integration*)
+- **amqpMaxRetries**: Retries count; default value 0 (*optional*)
 
 Logging Handler
 ---------------
 
 Configured via properties as a standard Handler like
 
-  handlers = org.graylog2.logging.GelfHandler
+    handlers = org.graylog2.logging.GelfHandler
 
-  .level = ALL
+    .level = ALL
 
-  org.graylog2.logging.GelfHandler.level = ALL
-  org.graylog2.logging.GelfHandler.graylogHost = syslog.example.com
-  #org.graylog2.logging.GelfHandler.graylogPort = 12201
-  #org.graylog2.logging.GelfHandler.extractStacktrace = true
-  #org.graylog2.logging.GelfHandler.additionalField.0 = foo=bah
-  #org.graylog2.logging.GelfHandler.additionalField.1 = foo2=bah2
-  #org.graylog2.logging.GelfHandler.facility = local0
+    org.graylog2.logging.GelfHandler.level = ALL
+    org.graylog2.logging.GelfHandler.graylogHost = syslog.example.com
+    #org.graylog2.logging.GelfHandler.graylogPort = 12201
+    #org.graylog2.logging.GelfHandler.extractStacktrace = true
+    #org.graylog2.logging.GelfHandler.additionalField.0 = foo=bah
+    #org.graylog2.logging.GelfHandler.additionalField.1 = foo2=bah2
+    #org.graylog2.logging.GelfHandler.facility = local0
 
-  .handlers=org.graylog2.logging.GelfHandler
+    .handlers=org.graylog2.logging.GelfHandler
 
 What is GELF
 ------------
