@@ -15,6 +15,7 @@ public class GelfAMQPSender implements GelfSender {
     private boolean shutdown = false;
 
     private ConnectionFactory factory;
+    private Connection connection;
     private Channel channel;
 
     private String exchangeName;
@@ -44,7 +45,7 @@ public class GelfAMQPSender implements GelfSender {
             try {
                 // establish the connection the first time
                 if (channel == null) {
-                    Connection connection = factory.newConnection();
+                    connection = factory.newConnection();
                     channel = connection.createChannel();
                 }
 
@@ -72,6 +73,10 @@ public class GelfAMQPSender implements GelfSender {
         shutdown = true;
         try {
             channel.close();
+        } catch (Exception e) {
+        }
+        try {
+            connection.close();
         } catch (Exception e) {
         }
     }
