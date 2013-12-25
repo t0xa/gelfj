@@ -1,6 +1,15 @@
 Gelfj - Changelog
 =================
 
+Release 1.1.4
+-------------
+
+2013-12-25
+   
+   Frohe Weihnachten! 
+
+   DEF: (@h0nIg) ensure that all resources are closed for AMQP transport (https://github.com/t0xa/gelfj/pull/67)
+
 Release 1.1.1
 -------------
 
