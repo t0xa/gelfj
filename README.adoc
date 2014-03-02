@@ -74,6 +74,10 @@ To send by AMQP:
 `mdcIncluded`::
     Include SLF4J MDC properties in the GELF message; default false (*optional*)
 
+`additionalField`::
+    Include an additional field with literal value in the GELF message.
+    Give the field name and value in the format `key=value`. (*optional*)
+
 `amqpURI`::
     AMQP URI (*required when using AMQP integration*)
 

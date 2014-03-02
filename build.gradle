@@ -103,7 +103,7 @@ uploadArchives {
             pom.project {
                 name 'logback-gelf'
                 packaging 'jar'
-                description 'GELF appender for logback'
+                description 'Logback appender that sends GELF messages'
                 url 'https://github.com/pukkaone/logback-gelf'
 
                 scm {
