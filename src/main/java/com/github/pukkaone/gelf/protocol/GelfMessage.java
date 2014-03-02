@@ -11,7 +11,6 @@ public class GelfMessage {
     private static final String FACILITY_VALUE = "gelf-java";
     private static final String HOST = "host";
     private static final String SHORT_MESSAGE = "short_message";
-    private static final String FULL_MESSAGE = "full_message";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private long timestampMillis;
@@ -78,7 +77,7 @@ public class GelfMessage {
     }
 
     public GelfMessage setFullMessage(String fullMessage) {
-        fieldNameToValueMap.put(FULL_MESSAGE, fullMessage);
+        fieldNameToValueMap.put("full_message", fullMessage);
         return this;
     }
 
@@ -94,22 +93,21 @@ public class GelfMessage {
         return this;
     }
 
-    public boolean isEmpty(String fieldName) {
+    private boolean isNotBlank(String fieldName) {
         Object value = fieldNameToValueMap.get(fieldName);
         if (value == null) {
-            return true;
+            return false;
         }
 
         if (value instanceof String) {
-            String s = (String) value;
-            return "".equals(s.trim());
+            return !((String) value).trim().isEmpty();
         }
 
-        return true;
+        return false;
     }
 
     public boolean isValid() {
-        return !isEmpty(SHORT_MESSAGE) && !isEmpty(HOST);
+        return isNotBlank(HOST) && isNotBlank(SHORT_MESSAGE);
     }
 
     public String toJson() {

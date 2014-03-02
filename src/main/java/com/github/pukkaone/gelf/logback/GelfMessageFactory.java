@@ -10,21 +10,21 @@ import org.slf4j.Marker;
 
 public class GelfMessageFactory {
 
-    private static final int MAXIMUM_SHORT_MESSAGE_LENGTH = 250;
-
-    private PatternLayout patternLayout;
+    private PatternLayout shortPatternLayout;
+    private PatternLayout fullPatternLayout;
 
     public GelfMessageFactory() {
-        patternLayout = new PatternLayout();
-        patternLayout.setContext(new LoggerContext());
-        patternLayout.setPattern("%m");
-        patternLayout.start();
-    }
+        // Short message contains event message and no stack trace.
+        shortPatternLayout = new PatternLayout();
+        shortPatternLayout.setContext(new LoggerContext());
+        shortPatternLayout.setPattern("%m%nopex");
+        shortPatternLayout.start();
 
-    private String truncateToShortMessage(String fullMessage) {
-        return (fullMessage.length() > MAXIMUM_SHORT_MESSAGE_LENGTH)
-                ? fullMessage.substring(0, MAXIMUM_SHORT_MESSAGE_LENGTH)
-                : fullMessage;
+        // Full message contains stack trace.
+        fullPatternLayout = new PatternLayout();
+        fullPatternLayout.setContext(new LoggerContext());
+        fullPatternLayout.setPattern("%xEx");
+        fullPatternLayout.start();
     }
 
     public GelfMessage createMessage(GelfAppender appender, ILoggingEvent event) {
@@ -70,9 +70,12 @@ public class GelfMessageFactory {
             message.setThread(event.getThreadName());
         }
 
-        String fullMessage = patternLayout.doLayout(event);
-        message.setFullMessage(fullMessage)
-                .setShortMessage(truncateToShortMessage(fullMessage));
+        message.setShortMessage(shortPatternLayout.doLayout(event));
+
+        String fullMessage = fullPatternLayout.doLayout(event);
+        if (!fullMessage.isEmpty()) {
+            message.setFullMessage(fullMessage);
+        }
 
         Map<String, String> fields = appender.getAdditionalFields();
         for (Map.Entry<String, String> entry : fields.entrySet()) {
