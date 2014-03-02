@@ -1,0 +1,89 @@
+= Logback appender that sends GELF messages
+
+Send log events to a Graylog2 server by GELF protocol over UDP, TCP or AMQP
+transport.
+
+
+== Usage
+
+Add the following dependency to your project:
+
+    <dependency>
+      <groupId>com.github.pukkaone</groupId>
+      <artifactId>logback-gelf</artifactId>
+      <version>1.1.5</version>
+    </dependency>
+
+
+Configure a logback appender to send by UDP (XML configuration format):
+
+    <appender name="GRAYLOG2" class="com.github.pukkaone.gelf.logback.GelfAppender">
+      <graylogHost>graylog2.example.com</graylogHost>
+      <originHost>my.machine.example.com</originHost>
+      <levelIncluded>true</levelIncluded>
+      <locationIncluded>false</locationIncluded>
+      <loggerIncluded>true</loggerIncluded>
+      <markerIncluded>false</markerIncluded>
+      <mdcIncluded>false</mdcIncluded>
+      <threadIncluded>false</threadIncluded>
+      <additionalField>application=MyApplication</additionalField>
+      <additionalField>environment=development</additionalField>
+    </appender>
+
+
+To send by AMQP:
+
+    <appender name="GRAYLOG2" class="com.github.pukkaone.gelf.logback.GelfAppender">
+      <amqpURI>amqp://amqp.example.com</amqpURI>
+      <amqpExchange>messages</amqpExchange>
+      <amqpRoutingKey>gelfudp</amqpRoutingKey>
+      <amqpMaxRetries>5</amqpMaxRetries>
+      <originHost>my.machine.example.com</originHost>
+      <additionalField>application=MyApplication</additionalField>
+      <additionalField>environment=development</additionalField>
+    </appender>
+
+
+== Options
+
+`graylogHost`::
+    Host name of Graylog2 server where it will send the GELF messages.
+    Prefix with `udp:` to send by UDP.
+    Prefix with `tcp:` to send by TCP.
+    If neither prefix is present, then the transport is UDP.
+
+`graylogPort`::
+    Port on which the Graylog2 server is listening; default 12201 (*optional*)
+
+`originHost`::
+    Name of the originating host; defaults to the local hostname (*optional*)
+
+`levelIncluded`::
+    Include SLF4J level in the GELF message; default true (*optional*)
+
+`locationIncluded`::
+    Include caller file name and line number. Generating caller location
+    information will severely impact execution speed; default false (*optional*)
+
+`loggerIncluded`::
+    Include SLF4J logger name in the GELF message; default true (*optional*)
+
+`markerIncluded`::
+    Include SLF4J marker name in the GELF message; default false (*optional*)
+
+`mdcIncluded`::
+    Include SLF4J MDC properties in the GELF message; default false (*optional*)
+
+`amqpURI`::
+    AMQP URI (*required when using AMQP integration*)
+
+`amqpExchange`::
+    AMQP exchange name - should be the same as setup in graylog2-radio
+    (*required when using AMQP integration*)
+
+`amqpRoutingKey`::
+    AMQP routing key - should be the same as setup in graylog2-radio
+    (*required when using AMQP integration*)
+
+`amqpMaxRetries`::
+    Maximum retries count; default value 0 (*optional*)

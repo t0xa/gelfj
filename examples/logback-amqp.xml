@@ -1,0 +1,24 @@
+<configuration>
+
+  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <layout class="ch.qos.logback.classic.PatternLayout">
+      <pattern>%-5level %d %logger{40} {{ '{%X}' }} %msg%n</pattern>
+    </layout>>
+  </appender>
+
+  <appender name="GRAYLOG2" class="com.github.pukkaone.gelf.logback.GelfAppender">
+    <amqpURI>amqp://amqp.example.com</amqpURI>
+    <amqpExchange>messages</amqpExchange>
+    <amqpRoutingKey>gelfudp</amqpRoutingKey>
+    <amqpMaxRetries>5</amqpMaxRetries>
+    <originHost>my.machine.example.com</originHost>
+    <additionalField>application=MyApplication</additionalField>
+    <additionalField>environment=development</additionalField>
+  </appender>
+
+  <root level="DEBUG">
+    <appender-ref ref="CONSOLE"/>
+    <appender-ref ref="GRAYLOG2"/>
+  </root>
+
+</configuration>

@@ -1,26 +1,132 @@
-apply plugin: 'java'
-
-sourceCompatibility = 1.6
-version = '1.1.2'
-jar {
-  manifest {
-    attributes 'Implementation-Title': 'GELF Java Implementation', 'Implementation-Version': version
-  }
+buildscript {
+    repositories {
+        maven { url 'http://repo.springsource.org/plugins-release' }
+    }
+    dependencies {
+        classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.5'
+    }
 }
 
+apply plugin: 'idea'
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'propdeps'
+apply plugin: 'propdeps-eclipse'
+apply plugin: 'propdeps-idea'
+apply plugin: 'propdeps-maven'
+apply plugin: 'signing'
+
+group = 'com.github.pukkaone'
+
+sourceCompatibility = 1.7
+
 repositories {
-  mavenCentral()
+    mavenLocal()
+    mavenCentral()
 }
 
 dependencies {
-  testCompile 'junit:junit:4.9'  
-  compile "log4j:log4j:1.2.8@jar"
-  compile "com.googlecode.json-simple:json-simple:1.1"
-  compile "com.rabbitmq:amqp-client:3.0.4"
+    compile "ch.qos.logback:logback-classic:0.9.17"
+    compile "com.fasterxml.jackson.core:jackson-databind:2.3.0"
+    compile "com.rabbitmq:amqp-client:3.0.4"
+    testCompile 'junit:junit:4.11'
+    testCompile 'org.mockito:mockito-all:1.9.5'
 }
 
-task libDir(dependsOn: assemble, type: Copy) {
-  into('lib')
-  from configurations.runtime
-  from configurations.runtime.allArtifacts.file
+// Gets version from tag.
+def readVersion() {
+    def output = new ByteArrayOutputStream()
+    def result = exec {
+        commandLine = ['git', 'describe']
+        standardOutput = output
+        ignoreExitValue = true
+    }
+    def version = (result.getExitValue() == 0) ?
+            output.toString().trim() : 'UNKNOWN'
+    def snapshotVersion = version.find(/^.*-SNAPSHOT/)
+    if (snapshotVersion != null) {
+        version = snapshotVersion
+    }
+    println "Version ${version}"
+    return version
+}
+
+def assignVersion() {
+    project.version = readVersion()
+}
+
+def allProcessResourcesTasks() {
+    sourceSets*.processResourcesTaskName.collect {
+        tasks[it]
+    }
+}
+
+afterEvaluate { project ->
+    assignVersion()
+
+    jar {
+        manifest {
+            attributes('Implementation-Version': project.version)
+        }
+    }
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from 'build/docs/javadoc'
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives jar
+    archives javadocJar
+    archives sourcesJar
+}
+
+signing {
+    sign configurations.archives
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            repository(url: 'https://oss.sonatype.org/service/local/staging/deploy/maven2/') {
+                authentication(userName: sonatypeUsername, password: sonatypePassword)
+            }
+
+            pom.project {
+                name 'logback-gelf'
+                packaging 'jar'
+                description 'GELF appender for logback'
+                url 'https://github.com/pukkaone/logback-gelf'
+
+                scm {
+                    connection 'scm:git:git@github.com:pukkaone/logback-gelf.git'
+                    developerConnection 'scm:git:git@github.com:pukkaone/logback-gelf.git'
+                    url 'https://github.com/pukkaone/logback-gelf'
+                }
+
+                licenses {
+                    license {
+                        name 'MIT License'
+                        url 'http://opensource.org/licenses/MIT'
+                        distribution 'repo'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id 'pukkaone'
+                        name 'Chin Huang'
+                    }
+                }
+            }
+        }
+    }
 }
