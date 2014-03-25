@@ -51,6 +51,7 @@
             <groupId>com.rabbitmq</groupId>
             <artifactId>amqp-client</artifactId>
             <version>3.0.4</version>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
