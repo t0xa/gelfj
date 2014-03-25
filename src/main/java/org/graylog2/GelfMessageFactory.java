@@ -85,7 +85,8 @@ public class GelfMessageFactory {
 
             if (mdc != null) {
                 for (Map.Entry<String, Object> entry : mdc.entrySet()) {
-                    gelfMessage.addField(entry.getKey(), entry.getValue().toString());
+                    Object value = provider.transformExtendedField(entry.getKey(), entry.getValue());
+                    gelfMessage.addField(entry.getKey(), value);
                 }
             }
 
