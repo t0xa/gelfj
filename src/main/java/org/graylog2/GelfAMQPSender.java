@@ -4,6 +4,7 @@ import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
+
 import java.io.IOException;
 import java.net.*;
 import java.security.KeyManagementException;
@@ -12,7 +13,8 @@ import java.util.Date;
 import java.util.UUID;
 
 public class GelfAMQPSender implements GelfSender {
-    private boolean shutdown = false;
+    
+    private volatile boolean shutdown = false;
 
     private ConnectionFactory factory;
     private Connection connection;
@@ -21,6 +23,7 @@ public class GelfAMQPSender implements GelfSender {
     private String exchangeName;
     private String routingKey;
     private int maxRetries;
+    private final String channelMutex = "channelMutex";
 
     public GelfAMQPSender(String host, String exchangeName, String routingKey, int maxRetries) throws IOException, URISyntaxException, NoSuchAlgorithmException, KeyManagementException {
         factory = new ConnectionFactory();
@@ -45,8 +48,11 @@ public class GelfAMQPSender implements GelfSender {
             try {
                 // establish the connection the first time
                 if (channel == null) {
-                    connection = factory.newConnection();
-                    channel = connection.createChannel();
+                    synchronized(channelMutex) {
+                        connection = factory.newConnection();
+                        channel = connection.createChannel();
+                        channel.confirmSelect();
+                    }
                 }
 
                 BasicProperties.Builder propertiesBuilder = new BasicProperties.Builder();
