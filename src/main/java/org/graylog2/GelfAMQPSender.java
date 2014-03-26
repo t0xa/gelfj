@@ -49,9 +49,11 @@ public class GelfAMQPSender implements GelfSender {
                 // establish the connection the first time
                 if (channel == null) {
                     synchronized(channelMutex) {
-                        connection = factory.newConnection();
-                        channel = connection.createChannel();
-                        channel.confirmSelect();
+                        if (channel == null) {
+                            connection = factory.newConnection();
+                            channel = connection.createChannel();
+                            channel.confirmSelect();
+                        }
                     }
                 }
 
