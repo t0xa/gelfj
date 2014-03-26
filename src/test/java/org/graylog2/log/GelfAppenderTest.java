@@ -27,6 +27,7 @@ public class GelfAppenderTest {
     private static final String CLASS_NAME = GelfAppenderTest.class.getCanonicalName();
     private TestGelfSender gelfSender;
     private GelfAppender gelfAppender;
+    private boolean rawExtended = false;
 
     @Before
     public void setUp() throws IOException {
@@ -42,6 +43,16 @@ public class GelfAppenderTest {
             @Override
             public void append(LoggingEvent event) {
                 super.append(event);
+            }
+            
+            @Override
+            public Object transformExtendedField(String field, Object object) {
+                if (rawExtended) {
+                    return object;
+                }
+                else {
+                    return super.transformExtendedField(field, object);
+                }
             }
         };
     }
@@ -89,6 +100,30 @@ public class GelfAppenderTest {
 
         assertEquals("bar", gelfSender.getLastMessage().getAdditonalFields().get("foo"));
         assertNull(gelfSender.getLastMessage().getAdditonalFields().get("non-existent"));
+    }
+    
+    @Test
+    public void handleMDCTransform() {
+
+        gelfAppender.setAddExtendedInformation(true);
+        
+
+        LoggingEvent event = new LoggingEvent(CLASS_NAME, Category.getInstance(this.getClass()), 123L, Level.INFO, "", new RuntimeException("LOL"));
+        MDC.put("foo", 200);
+
+        gelfAppender.append(event);
+
+        assertEquals("200", gelfSender.getLastMessage().getAdditonalFields().get("foo"));
+        assertNull(gelfSender.getLastMessage().getAdditonalFields().get("non-existent"));
+        
+        
+        rawExtended = true;
+        event = new LoggingEvent(CLASS_NAME, Category.getInstance(this.getClass()), 123L, Level.INFO, "", new RuntimeException("LOL"));
+        gelfAppender.append(event);
+
+        assertEquals(new Integer(200), gelfSender.getLastMessage().getAdditonalFields().get("foo"));
+        assertNull(gelfSender.getLastMessage().getAdditonalFields().get("non-existent"));
+        
     }
 
     @Test

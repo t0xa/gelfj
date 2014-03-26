@@ -9,4 +9,5 @@ public interface GelfMessageProvider {
     public Map<String, String> getFields();
     public boolean isAddExtendedInformation();
     public boolean isIncludeLocation();
+    public Object transformExtendedField(String field, Object object);
 }

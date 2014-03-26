@@ -19,6 +19,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+
 import org.graylog2.*;
 
 /**
@@ -158,6 +159,13 @@ public class GelfAppender extends AppenderSkeleton implements GelfMessageProvide
             fields = new HashMap<String, String>();
         }
         return Collections.unmodifiableMap(fields);
+    }
+    
+    @Override
+    public Object transformExtendedField(String field, Object object) {
+        if (object != null)
+            return object.toString();
+        return null;
     }
 
     @Override
