@@ -16,13 +16,13 @@ public class GelfAMQPSender implements GelfSender {
     
     private volatile boolean shutdown = false;
 
-    private ConnectionFactory factory;
+    private final ConnectionFactory factory;
     private Connection connection;
     private Channel channel;
 
-    private String exchangeName;
-    private String routingKey;
-    private int maxRetries;
+    private final String exchangeName;
+    private final String routingKey;
+    private final int maxRetries;
     private final String channelMutex = "channelMutex";
 
     public GelfAMQPSender(String host, String exchangeName, String routingKey, int maxRetries) throws IOException, URISyntaxException, NoSuchAlgorithmException, KeyManagementException {
