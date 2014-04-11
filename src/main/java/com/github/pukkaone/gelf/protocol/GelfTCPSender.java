@@ -1,9 +1,9 @@
 package com.github.pukkaone.gelf.protocol;
 
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
 public class GelfTCPSender extends GelfSender {
@@ -12,27 +12,20 @@ public class GelfTCPSender extends GelfSender {
     private InetAddress host;
     private int port;
     private Socket socket;
+    private OutputStreamWriter writer;
 
-    private void connect() throws IOException {
-        socket = new Socket(host, port);
+    private OutputStreamWriter getWriter() throws IOException {
+        if (socket == null) {
+            socket = new Socket(host, port);
+            writer = new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8);
+        }
+        return writer;
     }
 
     public GelfTCPSender(String host, int port) throws IOException {
         this.host = InetAddress.getByName(host);
         this.port = port;
-        connect();
-    }
-
-    private ByteBuffer toTCPBuffer(String json) {
-        // Do not use GZIP, as the headers will contain \0 bytes.
-        // graylog2-server uses \0 as a delimiter for TCP frames
-        // see: https://github.com/Graylog2/graylog2-server/issues/127
-        byte[] messageBytes = json.getBytes(StandardCharsets.UTF_8);
-
-        ByteBuffer buffer = ByteBuffer.allocate(messageBytes.length + 1);
-        buffer.put(messageBytes).put((byte) 0);
-        buffer.flip();
-        return buffer;
+        getWriter();
     }
 
     public boolean sendMessage(GelfMessage message) {
@@ -41,12 +34,13 @@ public class GelfTCPSender extends GelfSender {
         }
 
         try {
-            // reconnect if necessary
-            if (socket == null) {
-                socket = new Socket(host, port);
-            }
-
-            socket.getOutputStream().write(toTCPBuffer(message.toJson()).array());
+            // Do not use GZIP, as the headers will contain \0 bytes.
+            // graylog2-server uses \0 as a delimiter for TCP frames.
+            // See: https://github.com/Graylog2/graylog2-server/issues/127
+            OutputStreamWriter writer = getWriter();
+            writer.write(message.toJson());
+            writer.write('\0');
+            writer.flush();
             return true;
         } catch (IOException e) {
             // if an error occours, signal failure
@@ -63,6 +57,8 @@ public class GelfTCPSender extends GelfSender {
             }
         } catch (IOException e) {
             // Ignore exception closing socket.
+        } finally {
+            socket = null;
         }
     }
 }
