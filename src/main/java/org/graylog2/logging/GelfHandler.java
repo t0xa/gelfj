@@ -283,15 +283,15 @@ public class GelfHandler
     private int levelToSyslogLevel( final Level level )
     {
         final int syslogLevel;
-        if ( level == Level.SEVERE )
+        if ( level.intValue() == Level.SEVERE.intValue() )
         {
             syslogLevel = 3;
         }
-        else if ( level == Level.WARNING )
+        else if ( level.intValue() == Level.WARNING.intValue() )
         {
             syslogLevel = 4;
         }
-        else if ( level == Level.INFO )
+        else if ( level.intValue() == Level.INFO.intValue() )
         {
             syslogLevel = 6;
         }
