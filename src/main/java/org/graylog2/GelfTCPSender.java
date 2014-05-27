@@ -2,7 +2,6 @@ package org.graylog2;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.PipedOutputStream;
 import java.net.*;
 
 public class GelfTCPSender implements GelfSender {
