@@ -1,6 +1,7 @@
 package org.graylog2;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.*;
 
 public class GelfTCPSender implements GelfSender {
@@ -8,6 +9,7 @@ public class GelfTCPSender implements GelfSender {
 	private InetAddress host;
 	private int port;
 	private Socket socket;
+    private OutputStream os;
 
     public GelfTCPSender() {
     }
@@ -16,6 +18,7 @@ public class GelfTCPSender implements GelfSender {
 		this.host = InetAddress.getByName(host);
 		this.port = port;
 		this.socket = new Socket(host, port);
+        this.os = socket.getOutputStream();
 	}
 
 	public boolean sendMessage(GelfMessage message) {
@@ -25,11 +28,12 @@ public class GelfTCPSender implements GelfSender {
 
 		try {
 			// reconnect if necessary
-			if (socket == null) {
+			if (socket == null || os == null) {
 				socket = new Socket(host, port);
+                os = socket.getOutputStream();
 			}
 
-			socket.getOutputStream().write(message.toTCPBuffer().array());
+            os.write(message.toTCPBuffer().array());
 
 			return true;
 		} catch (IOException e) {
@@ -42,6 +46,9 @@ public class GelfTCPSender implements GelfSender {
 	public void close() {
 		shutdown = true;
 		try {
+            if (os != null){
+                os.close();
+            }
 			if (socket != null) {
 				socket.close();
 			}
