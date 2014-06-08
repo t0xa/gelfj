@@ -31,7 +31,7 @@ public class GelfHandlerTest
     @Test
     public void handleNullMessage() {
         Logger myLogger = Logger.getLogger("testNullMessage");
-        myLogger.log(Level.FINE, null);
+        myLogger.log(Level.FINE, (String) null);
 
         assertThat( "Message short message", gelfSender.getLastMessage().getShortMessage(), notNullValue() );
         assertThat( "Message full message", gelfSender.getLastMessage().getFullMessage(), notNullValue() );
