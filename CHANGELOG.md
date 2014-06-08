@@ -4,6 +4,14 @@ Gelfj - Changelog
 Release 1.1.4
 -------------
 
+2014-06-08
+
+   ENH: Several enhancements for AMQP and RabbitMQ
+
+
+Release 1.1.4
+-------------
+
 2013-12-25
    
    Frohe Weihnachten! 
