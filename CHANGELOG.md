@@ -1,7 +1,16 @@
 Gelfj - Changelog
 =================
 
-Release 1.1.4
+Release 1.1.7
+-------------
+
+2014-07-15
+
+   DEF: (@danieljamesscott) Issue #78 - Changed dependency to log4j 1.2.17
+   ENH: (@dabloem) Issue #77 - add additional setter for additionalField(s)
+
+
+Release 1.1.5
 -------------
 
 2014-06-08
