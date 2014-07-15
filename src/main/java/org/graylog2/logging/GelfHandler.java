@@ -264,9 +264,17 @@ public class GelfHandler
     }
 
     public void setAdditionalField(String entry) {
+        if (entry == null) return;
         final int index = entry.indexOf('=');
         if (-1 != index) {
-            fields.put(entry.substring(0, index), entry.substring(index + 1));
+            String key = entry.substring(0, index);
+            String val = entry.substring(index + 1);
+            if (key.equals("")) return;
+            fields.put(key, val);
         }
+    }
+
+    public Map<String, String> getFields() {
+        return fields;
     }
 }

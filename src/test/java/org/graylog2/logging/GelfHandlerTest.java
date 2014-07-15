@@ -1,10 +1,14 @@
 package org.graylog2.logging;
 
+import org.hamcrest.CoreMatchers;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -94,6 +98,16 @@ public class GelfHandlerTest
         myLogger.log( Level.FINE, null, new Object[] {1, "param2"});
 
         assertEquals( gelfSender.getLastMessage().getFullMessage(), "" );
+    }
+
+    @Test
+    public void testSetAdditionalField() {
+        GelfHandler gelfHandler = new GelfHandler();
+        gelfHandler.setAdditionalField(null);
+        gelfHandler.setAdditionalField("=");
+        gelfHandler.setAdditionalField("==");
+        Map<String, String> fields = gelfHandler.getFields();
+        assertThat("No empty key exists", fields.get(""), CoreMatchers.nullValue());
     }
 
 }
