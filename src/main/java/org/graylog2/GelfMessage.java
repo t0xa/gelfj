@@ -271,7 +271,7 @@ public class GelfMessage {
     }
 
     public void setAdditonalFields(Map<String, Object> additonalFields) {
-        this.additonalFields = additonalFields;
+        this.additonalFields = new HashMap<String, Object>(additonalFields);
     }
 
     public boolean isValid() {
