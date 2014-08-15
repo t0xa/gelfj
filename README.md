@@ -92,7 +92,7 @@ Options
 
 GelfAppender supports the following options:
 
-- **graylogHost**: Graylog2 server where it will send the GELF messages
+- **graylogHost**: Graylog2 server where it will send the GELF messages; to use UDP instead of TCP, prefix with `udp:`
 - **graylogPort**: Port on which the Graylog2 server is listening; default 12201 (*optional*)
 - **originHost**: Name of the originating host; defaults to the local hostname (*optional*)
 - **extractStacktrace** (true/false): Add stacktraces to the GELF message; default false (*optional*)
