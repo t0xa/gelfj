@@ -15,7 +15,7 @@ import java.util.zip.GZIPOutputStream;
 public class GelfMessage {
 
     private static final String ID_NAME = "id";
-    private static final String GELF_VERSION = "1.0";
+    private static final String GELF_VERSION = "1.1";
     private static final byte[] GELF_CHUNKED_ID = new byte[]{0x1e, 0x0f};
     private static final int MAXIMUM_CHUNK_SIZE = 1420;
     private static final BigDecimal TIME_DIVISOR = new BigDecimal(1000);
@@ -39,7 +39,7 @@ public class GelfMessage {
         this(shortMessage, fullMessage, timestamp, level, null, null);
     }
 
-    public GelfMessage(String shortMessage, String fullMessage, Long timestamp, String level, String line, String file) {
+    public GelfMessage(String shortMessage, String fullMessage, long timestamp, String level, String line, String file) {
         this.shortMessage = shortMessage;
         this.fullMessage = fullMessage;
         this.javaTimestamp = timestamp;
@@ -57,13 +57,22 @@ public class GelfMessage {
         map.put("full_message", getFullMessage());
         map.put("timestamp", getTimestamp());
 
-        map.put("level", getLevel());
         map.put("facility", getFacility());
+        try {
+            map.put("level", Long.parseLong(getLevel()));
+        } catch (NumberFormatException e) {
+            map.put("level", 6L); // fallback to info
+        }
+
         if (null != getFile()) {
             map.put("file", getFile());
         }
         if (null != getLine()) {
-            map.put("line", getLine());
+            try {
+                map.put("line", Long.parseLong(getLine()));
+            } catch (NumberFormatException e) {
+                map.put("line", -1L);
+            }
         }
 
         for (Map.Entry<String, Object> additionalField : additonalFields.entrySet()) {
