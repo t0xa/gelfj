@@ -1,6 +1,7 @@
 package org.graylog2;
 
 import org.json.simple.JSONValue;
+import org.json.simple.JSONObject;
 import org.junit.Test;
 
 import java.nio.ByteBuffer;
@@ -64,7 +65,7 @@ public class GelfMessageTest {
 
     @Test
     public void testEmptyShortMessage() {
-        GelfMessage message = new GelfMessage(null, "Long message", 1L, "INFO");
+        GelfMessage message = new GelfMessage(null, "Long message", 1L, "1");
         message.setHost("localhost");
         message.setVersion("0.0");
 
@@ -77,5 +78,15 @@ public class GelfMessageTest {
         message.setShortMessage("Hamburg");
         message.setFullMessage(null);
         assertThat("Valid when short message is set", message.isValid(), is(true));
+    }
+
+    @Test
+    public void testInvalidLevelMessage() {
+        GelfMessage message = new GelfMessage("Short", "Long", 1L, "WARNING");
+        message.setHost("localhost");
+
+        JSONObject object = (JSONObject) JSONValue.parse(message.toJson());
+
+        assertThat("Message with invalid level defaults to info", (Long) object.get("level"), is(6L));
     }
 }
