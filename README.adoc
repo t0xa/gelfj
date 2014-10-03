@@ -8,40 +8,47 @@ transport.
 
 Add the following dependency to your project:
 
-    <dependency>
-      <groupId>com.github.pukkaone</groupId>
-      <artifactId>logback-gelf</artifactId>
-      <version>1.1.5</version>
-    </dependency>
-
+[source,xml]
+--
+<dependency>
+  <groupId>com.github.pukkaone</groupId>
+  <artifactId>logback-gelf</artifactId>
+  <version>1.1.5</version>
+</dependency>
+--
 
 Configure a logback appender to send by UDP (XML configuration format):
 
-    <appender name="GRAYLOG2" class="com.github.pukkaone.gelf.logback.GelfAppender">
-      <graylogHost>graylog2.example.com</graylogHost>
-      <originHost>my.machine.example.com</originHost>
-      <levelIncluded>true</levelIncluded>
-      <locationIncluded>false</locationIncluded>
-      <loggerIncluded>true</loggerIncluded>
-      <markerIncluded>false</markerIncluded>
-      <mdcIncluded>false</mdcIncluded>
-      <threadIncluded>false</threadIncluded>
-      <additionalField>application=MyApplication</additionalField>
-      <additionalField>environment=development</additionalField>
-    </appender>
-
+[source,xml]
+--
+<appender name="GRAYLOG2" class="com.github.pukkaone.gelf.logback.GelfAppender">
+  <graylogHost>graylog2.example.com</graylogHost>
+  <originHost>my.machine.example.com</originHost>
+  <levelIncluded>true</levelIncluded>
+  <locationIncluded>false</locationIncluded>
+  <loggerIncluded>true</loggerIncluded>
+  <markerIncluded>false</markerIncluded>
+  <mdcIncluded>false</mdcIncluded>
+  <threadIncluded>false</threadIncluded>
+  <additionalField>application=MyApplication</additionalField>
+  <additionalField>environment=development</additionalField>
+</appender>
+--
 
 To send by AMQP:
 
-    <appender name="GRAYLOG2" class="com.github.pukkaone.gelf.logback.GelfAppender">
-      <amqpURI>amqp://amqp.example.com</amqpURI>
-      <amqpExchange>messages</amqpExchange>
-      <amqpRoutingKey>gelfudp</amqpRoutingKey>
-      <amqpMaxRetries>5</amqpMaxRetries>
-      <originHost>my.machine.example.com</originHost>
-      <additionalField>application=MyApplication</additionalField>
-      <additionalField>environment=development</additionalField>
-    </appender>
+[source,xml]
+--
+<appender name="GRAYLOG2" class="com.github.pukkaone.gelf.logback.GelfAppender">
+  <amqpURI>amqp://amqp.example.com</amqpURI>
+  <amqpExchange>messages</amqpExchange>
+  <amqpRoutingKey>gelfudp</amqpRoutingKey>
+  <amqpMaxRetries>5</amqpMaxRetries>
+  <originHost>my.machine.example.com</originHost>
+  <additionalField>application=MyApplication</additionalField>
+  <additionalField>environment=development</additionalField>
+</appender>
+--
 
 
 == Options
