@@ -1,7 +1,7 @@
 = Logback appender that sends GELF messages
 
-Send log events to a Graylog2 server by GELF protocol over UDP, TCP or AMQP
-transport.
+Send log events to a Graylog2 server by GELF protocol over UDP, TCP, TCP over
+SSL, or AMQP transport.
 
 
 == Usage
@@ -57,7 +57,8 @@ To send by AMQP:
     Host name of Graylog2 server where it will send the GELF messages.
     Prefix with `udp:` to send by UDP.
     Prefix with `tcp:` to send by TCP.
-    If neither prefix is present, then the transport is UDP.
+    Prefix with `ssl:` to send by TCP over SSL.
+    If no prefix is present, then the transport is UDP.
 
 `graylogPort`::
     Port on which the Graylog2 server is listening; default 12201 (*optional*)
@@ -98,3 +99,6 @@ To send by AMQP:
 
 `amqpMaxRetries`::
     Maximum retries count; default value 0 (*optional*)
+
+`sslTrustAllCertificates`::
+    Skip SSL server certificate validation; default false (*optional*)

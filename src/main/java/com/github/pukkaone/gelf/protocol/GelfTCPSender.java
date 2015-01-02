@@ -16,16 +16,19 @@ public class GelfTCPSender extends GelfSender {
 
     private OutputStreamWriter getWriter() throws IOException {
         if (socket == null) {
-            socket = new Socket(host, port);
+            socket = getSocket();
             writer = new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8);
         }
         return writer;
     }
 
+    protected Socket getSocket() throws IOException {
+        return new Socket(host, port);
+    }
+
     public GelfTCPSender(String host, int port) throws IOException {
         this.host = InetAddress.getByName(host);
         this.port = port;
-        getWriter();
     }
 
     public boolean sendMessage(GelfMessage message) {

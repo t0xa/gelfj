@@ -4,6 +4,7 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.AppenderBase;
 import com.github.pukkaone.gelf.protocol.GelfAMQPSender;
 import com.github.pukkaone.gelf.protocol.GelfMessage;
+import com.github.pukkaone.gelf.protocol.GelfSSLSender;
 import com.github.pukkaone.gelf.protocol.GelfSender;
 import com.github.pukkaone.gelf.protocol.GelfTCPSender;
 import com.github.pukkaone.gelf.protocol.GelfUDPSender;
@@ -36,6 +37,7 @@ public class GelfAppender extends AppenderBase<ILoggingEvent> {
     private String amqpExchange;
     private String amqpRoutingKey;
     private int amqpMaxRetries;
+    private boolean sslTrustAllCertificates;
     private GelfMessageFactory marshaller = new GelfMessageFactory();
     private GelfSender gelfSender;
 
@@ -172,6 +174,14 @@ public class GelfAppender extends AppenderBase<ILoggingEvent> {
         this.amqpMaxRetries = amqpMaxRetries;
     }
 
+    public boolean isSslTrustAllCertificates() {
+        return sslTrustAllCertificates;
+    }
+
+    public void setSslTrustAllCertificates(boolean sslTrustAllCertificates) {
+        this.sslTrustAllCertificates = sslTrustAllCertificates;
+    }
+
     private GelfUDPSender getGelfUDPSender(String graylogHost, int graylogPort)
         throws IOException
     {
@@ -182,6 +192,13 @@ public class GelfAppender extends AppenderBase<ILoggingEvent> {
         throws IOException
     {
         return new GelfTCPSender(graylogHost, graylogPort);
+    }
+
+    private GelfSSLSender getGelfSSLSender(
+            String graylogHost, int graylogPort, boolean sslTrustAllCertificates)
+        throws IOException
+    {
+        return new GelfSSLSender(graylogHost, graylogPort, sslTrustAllCertificates);
     }
 
     private GelfAMQPSender getGelfAMQPSender(
@@ -206,7 +223,10 @@ public class GelfAppender extends AppenderBase<ILoggingEvent> {
         }
 
         try {
-            if (graylogHost != null && graylogHost.startsWith("tcp:")) {
+            if (graylogHost != null && graylogHost.startsWith("ssl:")) {
+                String sslGraylogHost = graylogHost.substring(4);
+                gelfSender = getGelfSSLSender(sslGraylogHost, graylogPort, sslTrustAllCertificates);
+            } else if (graylogHost != null && graylogHost.startsWith("tcp:")) {
                 String tcpGraylogHost = graylogHost.substring(4);
                 gelfSender = getGelfTCPSender(tcpGraylogHost, graylogPort);
             } else if (graylogHost != null && graylogHost.startsWith("udp:")) {
