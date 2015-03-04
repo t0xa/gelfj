@@ -146,7 +146,11 @@ public class GelfMessage {
             if (to >= messageLength) {
                 to = messageLength;
             }
-            byte[] datagram = concatByteArray(header, Arrays.copyOfRange(messageBytes, from, to));
+            
+            byte[] range = new byte[(to - from) + 1];
+            System.arraycopy(messageBytes, from, range, 0, (range.length - 1));            
+            
+            byte[] datagram = concatByteArray(header, range);
             datagrams[idx] = ByteBuffer.allocate(datagram.length);
             datagrams[idx].put(datagram);
             datagrams[idx].flip();
@@ -296,7 +300,8 @@ public class GelfMessage {
     }
 
     private byte[] concatByteArray(byte[] first, byte[] second) {
-        byte[] result = Arrays.copyOf(first, first.length + second.length);
+        byte[] result = new byte[first.length + second.length];
+        System.arraycopy(first, 0, result, 0, first.length);
         System.arraycopy(second, 0, result, first.length, second.length);
         return result;
     }
