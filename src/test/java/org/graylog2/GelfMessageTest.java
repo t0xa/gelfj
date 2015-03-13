@@ -89,4 +89,19 @@ public class GelfMessageTest {
 
         assertThat("Message with invalid level defaults to info", (Long) object.get("level"), is(6L));
     }
+
+    @Test
+    public void concatByteArrayTest() {
+        GelfMessage message = new GelfMessage("Short", "Long", 1L, "WARNING");
+
+        byte[] test1 = message.concatByteArray("ABC is ea".getBytes(), "sy as 123".getBytes());
+        assertThat("Bytes concatenates correctly", new String(test1), is("ABC is easy as 123"));
+
+        byte[] test2 = message.concatByteArray(new byte[]{}, "sy as 123".getBytes());
+        assertThat("Empty bytes concatenates correctly", new String(test2), is("sy as 123"));
+
+        byte[] test3 = message.concatByteArray(new byte[]{}, new byte[]{});
+        assertThat("Two empty bytes concatenates correctly", test3, is(new byte[]{}));
+    }
+
 }

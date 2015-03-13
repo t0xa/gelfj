@@ -299,7 +299,7 @@ public class GelfMessage {
         return str == null || "".equals(str.trim());
     }
 
-    private byte[] concatByteArray(byte[] first, byte[] second) {
+    byte[] concatByteArray(byte[] first, byte[] second) {
         byte[] result = new byte[first.length + second.length];
         System.arraycopy(first, 0, result, 0, first.length);
         System.arraycopy(second, 0, result, first.length, second.length);
