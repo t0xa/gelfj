@@ -226,34 +226,27 @@ public class GelfAppenderTest {
 
         private String errorMessage = "";
 
-        @Override
         public void setLogger(Logger logger) {
         }
 
-        @Override
         public void error(String s, Exception e, int i) {
             errorMessage = s;
         }
 
-        @Override
         public void error(String s) {
             errorMessage = s;
         }
 
-        @Override
         public void error(String s, Exception e, int i, LoggingEvent loggingEvent) {
             errorMessage = s;
         }
 
-        @Override
         public void setAppender(Appender appender) {
         }
 
-        @Override
         public void setBackupAppender(Appender appender) {
         }
 
-        @Override
         public void activateOptions() {
         }
 

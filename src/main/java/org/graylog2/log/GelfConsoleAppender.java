@@ -94,7 +94,6 @@ public class GelfConsoleAppender extends ConsoleAppender implements GelfMessageP
         return Collections.unmodifiableMap(fields);
     }
     
-    @Override
     public Object transformExtendedField(String field, Object object) {
         if (object != null)
             return object.toString();

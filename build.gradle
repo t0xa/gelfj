@@ -12,8 +12,8 @@ apply plugin: 'propdeps'
 apply plugin: 'propdeps-maven'
 
 
-sourceCompatibility = 1.6
-version = '1.1.8-SNAPSHOT'
+sourceCompatibility = 1.5
+version = '1.1.9-SNAPSHOT'
 jar {
   manifest {
     attributes 'Implementation-Title': 'GELF Java Implementation', 'Implementation-Version': version
