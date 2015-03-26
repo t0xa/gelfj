@@ -1,6 +1,11 @@
 Gelfj - Changelog
 =================
 
+Release 1.1.8
+-------------
+
+For wider platform support Java 1.5 support added. Thanks @dougporter!
+
 Release 1.1.7
 -------------
 
