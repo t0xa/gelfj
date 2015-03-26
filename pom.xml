@@ -18,14 +18,14 @@
     <groupId>org.graylog2</groupId>
     <artifactId>gelfj</artifactId>
     <version>1.1.9-SNAPSHOT</version>
-    <packaging>jar</packaging>
+    <packaging>bundle</packaging>
     <name>gelfj</name>
     <description>GELF implementation in Java and log4j appender without any dependencies.</description>
     <url>https://github.com/t0xa/gelfj</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.version>1.5</java.version>
+        <java.version>1.6</java.version>
     </properties>
 
     <licenses>
@@ -150,6 +150,22 @@
                     </execution>
                 </executions>
             </plugin>
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<version>2.3.5</version>
+				<extensions>true</extensions>
+				<configuration>
+					<instructions>
+						<Bundle-Name>${project.groupId}.${project.artifactId}</Bundle-Name>
+						<Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
+						<Import-Package>!*</Import-Package>
+						<Embed-Dependency>*;scope=compile|runtime;inline=true</Embed-Dependency>
+						<Fragment-Host>org.ops4j.pax.logging.pax-logging-service</Fragment-Host>
+						<Implementation-Version>${project.version}</Implementation-Version>
+					</instructions>
+				</configuration>
+			</plugin>
         </plugins>
     </build>
 
