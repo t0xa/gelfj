@@ -77,6 +77,8 @@ public class GelfMessageFactory {
             message.setFullMessage(fullMessage);
         }
 
+        message.setFacility(appender.getFacility());
+
         Map<String, String> fields = appender.getAdditionalFields();
         for (Map.Entry<String, String> entry : fields.entrySet()) {
             message.addField(entry.getKey(), entry.getValue());

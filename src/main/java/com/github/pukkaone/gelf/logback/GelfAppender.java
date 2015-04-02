@@ -32,6 +32,7 @@ public class GelfAppender extends AppenderBase<ILoggingEvent> {
     private boolean markerIncluded;
     private boolean mdcIncluded;
     private boolean threadIncluded;
+    private String facility = "gelf-java";
     private Map<String, String> additionalFields = new HashMap<>();
     private String amqpURI;
     private String amqpExchange;
@@ -127,6 +128,14 @@ public class GelfAppender extends AppenderBase<ILoggingEvent> {
         this.threadIncluded = threadIncluded;
     }
 
+    public String getFacility() {
+        return facility;
+    }
+
+    public void setFacility(String facility) {
+        this.facility = facility;
+    }
+
     public Map<String, String> getAdditionalFields() {
         return additionalFields;
     }
@@ -139,7 +148,7 @@ public class GelfAppender extends AppenderBase<ILoggingEvent> {
                 keyValue));
             return;
         }
-         additionalFields.put(parts[0], parts[1]);
+        additionalFields.put(parts[0], parts[1]);
     }
 
     public String getAmqpURI() {

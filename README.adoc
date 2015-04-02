@@ -30,6 +30,7 @@ Configure a logback appender to send by UDP (XML configuration format):
   <markerIncluded>false</markerIncluded>
   <mdcIncluded>false</mdcIncluded>
   <threadIncluded>false</threadIncluded>
+  <facility>gelf-java</facility>
   <additionalField>application=MyApplication</additionalField>
   <additionalField>environment=development</additionalField>
 </appender>
@@ -45,6 +46,7 @@ To send by AMQP:
   <amqpRoutingKey>gelfudp</amqpRoutingKey>
   <amqpMaxRetries>5</amqpMaxRetries>
   <originHost>my.machine.example.com</originHost>
+  <facility>gelf-java</facility>
   <additionalField>application=MyApplication</additionalField>
   <additionalField>environment=development</additionalField>
 </appender>
@@ -81,6 +83,9 @@ To send by AMQP:
 
 `mdcIncluded`::
     Include SLF4J MDC properties in the GELF message; default false (*optional*)
+
+`facility`::
+    Facility value to send in the GELF message; default `gelf-java` (*optional*)
 
 `additionalField`::
     Include an additional field with literal value in the GELF message.

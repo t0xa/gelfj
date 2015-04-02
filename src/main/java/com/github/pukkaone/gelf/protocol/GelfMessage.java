@@ -7,8 +7,9 @@ import java.util.Map;
 
 public class GelfMessage {
 
+    public static final String FACILITY = "facility";
+
     private static final String VERSION_VALUE = "1.1";
-    private static final String FACILITY_VALUE = "gelf-java";
     private static final String HOST = "host";
     private static final String SHORT_MESSAGE = "short_message";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
@@ -18,7 +19,6 @@ public class GelfMessage {
 
     public GelfMessage() {
         fieldNameToValueMap.put("version", VERSION_VALUE);
-        fieldNameToValueMap.put("_facility", FACILITY_VALUE);
     }
 
     public long getTimestampMillis() {
@@ -43,6 +43,15 @@ public class GelfMessage {
 
     public GelfMessage setLevel(int level) {
         fieldNameToValueMap.put("level", level);
+        return this;
+    }
+
+    private String prefix(String name) {
+      return '_' + name;
+    }
+
+    public GelfMessage setFacility(String facility) {
+        fieldNameToValueMap.put(prefix(FACILITY), facility);
         return this;
     }
 
@@ -82,7 +91,7 @@ public class GelfMessage {
     }
 
     public Object getField(String name) {
-        return fieldNameToValueMap.get('_' + name);
+        return fieldNameToValueMap.get(prefix(name));
     }
 
     public GelfMessage addField(String name, Object value) {

@@ -19,6 +19,7 @@ public class GelfMessageFactoryTest {
     private static final String HOST = "host";
     private static final String MDC_KEY = "mdcKey";
     private static final String MDC_VALUE = "mdcValue";
+    private static final String FACILITY_VALUE = "facility";
 
     @Mock
     private GelfAppender appender;
@@ -63,5 +64,14 @@ public class GelfMessageFactoryTest {
         GelfMessage message = marshaller.createMessage(appender, event);
 
         assertEquals(MDC_VALUE, message.getField(MDC_KEY));
+    }
+
+    @Test
+    public void should_include_facility() {
+        when(appender.getFacility()).thenReturn(FACILITY_VALUE);
+
+        GelfMessage message = marshaller.createMessage(appender, event);
+
+        assertEquals(FACILITY_VALUE, message.getField(GelfMessage.FACILITY));
     }
 }
