@@ -14,7 +14,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-public class GelfMessageFactoryTest {
+public class DefaultGelfMessageFactoryTest {
 
     private static final String HOST = "host";
     private static final String MDC_KEY = "mdcKey";
@@ -36,7 +36,7 @@ public class GelfMessageFactoryTest {
         when(event.getMDCPropertyMap())
                 .thenReturn(Collections.singletonMap(MDC_KEY, MDC_VALUE));
 
-        marshaller = new GelfMessageFactory();
+        marshaller = new DefaultGelfMessageFactory();
     }
 
     @Test

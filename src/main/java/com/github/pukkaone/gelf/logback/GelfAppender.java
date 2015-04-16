@@ -39,7 +39,7 @@ public class GelfAppender extends AppenderBase<ILoggingEvent> {
     private String amqpRoutingKey;
     private int amqpMaxRetries;
     private boolean sslTrustAllCertificates;
-    private GelfMessageFactory marshaller = new GelfMessageFactory();
+    private GelfMessageFactory marshaller = new DefaultGelfMessageFactory();
     private GelfSender gelfSender;
 
     public String getGraylogHost() {
@@ -189,6 +189,14 @@ public class GelfAppender extends AppenderBase<ILoggingEvent> {
 
     public void setSslTrustAllCertificates(boolean sslTrustAllCertificates) {
         this.sslTrustAllCertificates = sslTrustAllCertificates;
+    }
+
+    public GelfMessageFactory getMarshaller() {
+        return marshaller;
+    }
+
+    public void setMarshaller(GelfMessageFactory marshaller) {
+        this.marshaller = marshaller;
     }
 
     private GelfUDPSender getGelfUDPSender(String graylogHost, int graylogPort)

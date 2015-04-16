@@ -53,6 +53,27 @@ To send by AMQP:
 --
 
 
+=== Customize GELF messages
+
+If you want to customize the GELF messages sent by the appender, you can
+replace the class that converts log events to GELF messages with your own
+implementation. Define a class implementing the `GelfMessageFactory`
+interface. Alternatively, you may extend the `DefaultGelfMessageFactory`
+class, which implements this interface.
+
+Configure the custom GELF message factory in the appender:
+[source,xml]
+--
+<appender name="GRAYLOG2" class="com.github.pukkaone.gelf.logback.GelfAppender">
+  ...
+  <marshaller class="com.example.MyGelfMessageFactory">
+    <mdcTimestampProperty>ReceivedDateTime</mdcTimestampProperty>
+  </marshaller>
+  ...
+</appender>
+--
+
+
 == Options
 
 `graylogHost`::
