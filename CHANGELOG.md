@@ -2,14 +2,16 @@ Gelfj - Changelog
 =================
 
 Release 1.1.10
---------------
+-------------
 
-   OSGi framework enabled. Thanks @mmuruganandam!
+2015-03-26
+
+   ENH: (@mmuruganandam) Enabled the support for OSGI bundling.  Updated the Maven POM to be compatible with 1.6 and above for @Override issues with 1.5.
 
 Release 1.1.9
 -------------
 
-   For wider platform support Java 1.5 support added. Thanks @dougporter!
+For wider platform support Java 1.5 support added. Thanks @dougporter!
 
 Release 1.1.7
 -------------

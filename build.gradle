@@ -2,22 +2,37 @@ buildscript {
   repositories {
     maven { url "http://repo.springsource.org/plugins-release" }
   }
+  
   dependencies {
     classpath("org.springframework.build.gradle:propdeps-plugin:0.0.5")
+	classpath 'org.dm.gradle:gradle-bundle-plugin:0.6.2'
   }
 }
 
 apply plugin: 'java'
 apply plugin: 'propdeps'
 apply plugin: 'propdeps-maven'
+apply plugin: 'org.dm.bundle'
 
-
+group = 'org.graylog2.gelfj'
 sourceCompatibility = 1.5
 version = '1.1.9-SNAPSHOT'
+
 jar {
-  manifest {
-    attributes 'Implementation-Title': 'GELF Java Implementation', 'Implementation-Version': version
-  }
+	manifest {
+		attributes 'Implementation-Title': 'GELF Java Implementation', 
+			'Implementation-Version': project.version, 
+			'Import-Package': '!*',
+			'Private-Package': '*',
+			'Export-Package': 'org.graylog2;org.graylog2.*',
+			'Bundle-Name': project.group,
+			'Bundle-SymbolicName': project.group,
+			'Embed-Dependency': '*;scope=compile|runtime;inline=true',
+			'Fragment-Host' : 'org.ops4j.pax.logging.pax-logging-service'
+	}
+	doFirst {
+		from { configurations.runtime.collect { it.isDirectory() ? it : zipTree(it) } }
+	}
 }
 
 repositories {
@@ -29,7 +44,7 @@ dependencies {
   testCompile 'com.google.guava:guava:18.0-rc1'
   compile "log4j:log4j:1.2.17@jar"
   compile "com.googlecode.json-simple:json-simple:1.1"
-  optional "com.rabbitmq:amqp-client:3.0.4"
+  compile "com.rabbitmq:amqp-client:3.0.4"
 }
 
 task libDir(dependsOn: assemble, type: Copy) {
