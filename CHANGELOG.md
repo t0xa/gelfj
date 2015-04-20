@@ -1,10 +1,15 @@
 Gelfj - Changelog
 =================
 
+Release 1.1.10
+--------------
+
+   OSGi framework enabled. Thanks @mmuruganandam!
+
 Release 1.1.9
 -------------
 
-For wider platform support Java 1.5 support added. Thanks @dougporter!
+   For wider platform support Java 1.5 support added. Thanks @dougporter!
 
 Release 1.1.7
 -------------
