@@ -13,7 +13,7 @@ Add the following dependency to your project:
 <dependency>
   <groupId>com.github.pukkaone</groupId>
   <artifactId>logback-gelf</artifactId>
-  <version>1.1.6</version>
+  <version>1.1.7</version>
 </dependency>
 --
 
@@ -49,27 +49,6 @@ To send by AMQP:
   <facility>gelf-java</facility>
   <additionalField>application=MyApplication</additionalField>
   <additionalField>environment=development</additionalField>
-</appender>
---
-
-
-=== Customize GELF messages
-
-If you want to customize the GELF messages sent by the appender, you can
-replace the class that converts log events to GELF messages with your own
-implementation. Define a class implementing the `GelfMessageFactory`
-interface. Alternatively, you may extend the `DefaultGelfMessageFactory`
-class, which implements this interface.
-
-Configure the custom GELF message factory in the appender:
-[source,xml]
---
-<appender name="GRAYLOG2" class="com.github.pukkaone.gelf.logback.GelfAppender">
-  ...
-  <marshaller class="com.example.MyGelfMessageFactory">
-    <mdcTimestampProperty>ReceivedDateTime</mdcTimestampProperty>
-  </marshaller>
-  ...
 </appender>
 --
 
@@ -128,3 +107,24 @@ Configure the custom GELF message factory in the appender:
 
 `sslTrustAllCertificates`::
     Skip SSL server certificate validation; default false (*optional*)
+
+
+=== Customize GELF messages
+
+If you want to customize the GELF messages sent by the appender, you can
+replace the class that converts log events to GELF messages with your own
+implementation. Define a class implementing the `GelfMessageFactory`
+interface. Alternatively, you may extend the `DefaultGelfMessageFactory`
+class, which implements this interface.
+
+Configure the custom GELF message factory in the appender:
+[source,xml]
+--
+<appender name="GRAYLOG2" class="com.github.pukkaone.gelf.logback.GelfAppender">
+  ...
+  <marshaller class="com.example.MyGelfMessageFactory">
+    <mdcTimestampProperty>ReceivedDateTime</mdcTimestampProperty>
+  </marshaller>
+  ...
+</appender>
+--
