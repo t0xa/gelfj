@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -13,7 +14,7 @@
         <developerConnection>scm:git:git@github.com:t0xa/gelfj.git</developerConnection>
         <url>git@github.com:t0xa/gelfj.git</url>
         <tag>HEAD</tag>
-  </scm>
+    </scm>
 
     <groupId>org.graylog2</groupId>
     <artifactId>gelfj</artifactId>
@@ -150,22 +151,22 @@
                     </execution>
                 </executions>
             </plugin>
-			<plugin>
-				<groupId>org.apache.felix</groupId>
-				<artifactId>maven-bundle-plugin</artifactId>
-				<version>2.3.5</version>
-				<extensions>true</extensions>
-				<configuration>
-					<instructions>
-						<Bundle-Name>${project.groupId}.${project.artifactId}</Bundle-Name>
-						<Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
-						<Import-Package>!*</Import-Package>
-						<Embed-Dependency>*;scope=compile|runtime;inline=true</Embed-Dependency>
-						<Fragment-Host>org.ops4j.pax.logging.pax-logging-service</Fragment-Host>
-						<Implementation-Version>${project.version}</Implementation-Version>
-					</instructions>
-				</configuration>
-			</plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <version>2.3.5</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <instructions>
+                        <Bundle-Name>${project.groupId}.${project.artifactId}</Bundle-Name>
+                        <Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
+                        <Import-Package>!*</Import-Package>
+                        <Embed-Dependency>*;scope=compile|runtime;inline=true</Embed-Dependency>
+                        <Fragment-Host>org.ops4j.pax.logging.pax-logging-service</Fragment-Host>
+                        <Implementation-Version>${project.version}</Implementation-Version>
+                    </instructions>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
@@ -199,7 +200,10 @@
         <profile>
             <id>release-sign-artifacts</id>
             <activation>
-                <property><name>performRelease</name><value>true</value></property>
+                <property>
+                    <name>performRelease</name>
+                    <value>true</value>
+                </property>
             </activation>
             <build>
                 <plugins>
