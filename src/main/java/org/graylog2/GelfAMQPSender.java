@@ -6,6 +6,8 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.*;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
@@ -34,9 +36,9 @@ public class GelfAMQPSender implements GelfSender {
         this.maxRetries = maxRetries;
     }
 
-    public boolean sendMessage(GelfMessage message) {
+    public GelfSenderResult sendMessage(GelfMessage message) {
         if (shutdown || !message.isValid()) {
-            return false;
+            return GelfSenderResult.MESSAGE_NOT_VALID_OR_SHUTTING_DOWN;
         }
 
         // set unique id to identify duplicates after connection failure
@@ -44,6 +46,7 @@ public class GelfAMQPSender implements GelfSender {
         String messageid = "gelf" + message.getHost() + message.getFacility() + message.getTimestamp() + uuid;
 
         int tries = 0;
+        Exception lastException = null;
         do {
             try {
                 // establish the connection the first time
@@ -67,14 +70,15 @@ public class GelfAMQPSender implements GelfSender {
                 channel.basicPublish(exchangeName, routingKey, properties, message.toAMQPBuffer().array());
                 channel.waitForConfirms();
 
-                return true;
+                return GelfSenderResult.OK;
             } catch (Exception e) {
                 channel = null;
                 tries++;
+                lastException = e;
             }
         } while (tries <= maxRetries || maxRetries < 0);
 
-        return false;
+        return new GelfSenderResult(GelfSenderResult.ERROR_CODE, lastException);
     }
 
     public void close() {

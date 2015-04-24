@@ -12,17 +12,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Configure it this way:
- * 
- * log4j.appender.console.additionalFields={'environment': 'DEV', 'application': 'MyAPP'}
- * log4j.appender.console.extractStacktrace=true
- * log4j.appender.console.addExtendedInformation=true
- * log4j.appender.console.originHost=www.example.com
- * log4j.appender.console=org.graylog2.log.GelfConsoleAppender
- * log4j.appender.console.layout=org.apache.log4j.PatternLayout
- * 
- */
 public class GelfConsoleAppender extends ConsoleAppender implements GelfMessageProvider{
 
     private static String originHost;

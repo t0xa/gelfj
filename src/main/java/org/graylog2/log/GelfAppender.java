@@ -218,9 +218,15 @@ public class GelfAppender extends AppenderSkeleton implements GelfMessageProvide
     protected void append(LoggingEvent event) {
         GelfMessage gelfMessage = GelfMessageFactory.makeMessage(layout, event, this);
 
-        if(getGelfSender() == null || !getGelfSender().sendMessage(gelfMessage)) {
-            errorHandler.error("Could not send GELF message");
+        if(getGelfSender() == null) {
+            errorHandler.error("Could not send GELF message. Gelf Sender is not initialised and equals null");
+        } else {
+            GelfSenderResult gelfSenderResult = getGelfSender().sendMessage(gelfMessage);
+            if (!GelfSenderResult.OK.equals(gelfSenderResult)) {
+                errorHandler.error("Error during sending GELF message. Error code: " + gelfSenderResult.getCode() + ".", gelfSenderResult.getException(), ErrorCode.WRITE_FAILURE);
+            }
         }
+
     }
 
     public GelfSender getGelfSender() {

@@ -6,9 +6,12 @@ import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 
 public class GelfUDPSender implements GelfSender {
+
 	private InetAddress host;
 	private int port;
 	private DatagramChannel channel;
+
+	private static final int MAX_RETRIES = 5;
 
     public GelfUDPSender() {
     }
@@ -32,20 +35,30 @@ public class GelfUDPSender implements GelfSender {
 		return resultingChannel;
 	}
 
-	public boolean sendMessage(GelfMessage message) {
-		return message.isValid() && sendDatagrams(message.toUDPBuffers());
+	public GelfSenderResult sendMessage(GelfMessage message) {
+		if (!message.isValid()) return GelfSenderResult.MESSAGE_NOT_VALID;
+		return sendDatagrams(message.toUDPBuffers());
 	}
 
-	private boolean sendDatagrams(ByteBuffer[] bytesList) {
-		try {
-			for (ByteBuffer buffer : bytesList) {
-				channel.write(buffer);
-			}
-		} catch (IOException e) {
-			return false;
-		}
+	private GelfSenderResult sendDatagrams(ByteBuffer[] bytesList) {
 
-		return true;
+		int tries = 0;
+		Exception lastException = null;
+		do {
+
+			try {
+				for (ByteBuffer buffer : bytesList) {
+					channel.write(buffer);
+				}
+
+				return GelfSenderResult.OK;
+			} catch (IOException e) {
+				tries++;
+				lastException = e;
+			}
+		} while (tries <= MAX_RETRIES);
+
+		return new GelfSenderResult(GelfSenderResult.ERROR_CODE, lastException);
 	}
 
 	public void close() {

@@ -1,6 +1,7 @@
 package org.graylog2.logging;
 
 import org.graylog2.GelfMessage;
+import org.graylog2.GelfSenderResult;
 import org.graylog2.GelfUDPSender;
 
 import java.io.IOException;
@@ -16,9 +17,9 @@ public class MockGelfHandlerSender extends GelfUDPSender {
     }
 
     @Override
-    public boolean sendMessage(GelfMessage message) {
+    public GelfSenderResult sendMessage(GelfMessage message) {
         lastMessage = message;
-        return true;
+        return GelfSenderResult.OK;
     }
 
     public GelfMessage getLastMessage() {

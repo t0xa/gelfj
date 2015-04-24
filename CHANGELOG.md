@@ -1,8 +1,15 @@
 Gelfj - Changelog
 =================
 
+Release 1.1.11
+--------------
+
+2015-04-24
+   
+   ENH: More logging around TCP, UDP and AMQP senders to give more debug information. Issue #87
+
 Release 1.1.10
--------------
+--------------
 
 2015-03-26
 

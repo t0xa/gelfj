@@ -152,9 +152,13 @@ public class GelfHandler
                 }
             }
         }
-        if (null == gelfSender ||
-                !gelfSender.sendMessage(makeMessage(record))) {
+        if (null == gelfSender) {
             reportError("Could not send GELF message", null, ErrorManager.WRITE_FAILURE);
+        } else {
+            GelfSenderResult gelfSenderResult = gelfSender.sendMessage(makeMessage(record));
+            if (!GelfSenderResult.OK.equals(gelfSenderResult)) {
+                reportError("Error during sending GELF message. Error code: " + gelfSenderResult.getCode() + ".", gelfSenderResult.getException(), ErrorManager.WRITE_FAILURE);
+            }
         }
     }
 

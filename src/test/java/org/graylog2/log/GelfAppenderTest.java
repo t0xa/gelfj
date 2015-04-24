@@ -3,10 +3,7 @@ package org.graylog2.log;
 import org.apache.log4j.*;
 import org.apache.log4j.spi.ErrorHandler;
 import org.apache.log4j.spi.LoggingEvent;
-import org.graylog2.GelfMessage;
-import org.graylog2.GelfSender;
-import org.graylog2.GelfTCPSender;
-import org.graylog2.GelfUDPSender;
+import org.graylog2.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -212,9 +209,9 @@ public class GelfAppenderTest {
         }
 
         @Override
-        public boolean sendMessage(GelfMessage message) {
+        public GelfSenderResult sendMessage(GelfMessage message) {
             this.lastMessage = message;
-            return true;
+            return GelfSenderResult.OK;
         }
 
         public GelfMessage getLastMessage() {

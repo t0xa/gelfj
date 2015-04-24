@@ -21,9 +21,9 @@ public class GelfTCPSender implements GelfSender {
         this.os = socket.getOutputStream();
 	}
 
-	public boolean sendMessage(GelfMessage message) {
+	public GelfSenderResult sendMessage(GelfMessage message) {
 		if (shutdown || !message.isValid()) {
-			return false;
+			return GelfSenderResult.MESSAGE_NOT_VALID_OR_SHUTTING_DOWN;
 		}
 
 		try {
@@ -35,11 +35,11 @@ public class GelfTCPSender implements GelfSender {
 
             os.write(message.toTCPBuffer().array());
 
-			return true;
+			return GelfSenderResult.OK;
 		} catch (IOException e) {
 			// if an error occours, signal failure
 			socket = null;
-			return false;
+			return new GelfSenderResult(GelfSenderResult.ERROR_CODE, e);
 		}
 	}
 
