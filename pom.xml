@@ -12,12 +12,12 @@
         <connection>scm:git:git@github.com:t0xa/gelfj.git</connection>
         <developerConnection>scm:git:git@github.com:t0xa/gelfj.git</developerConnection>
         <url>git@github.com:t0xa/gelfj.git</url>
-        <tag>v1.1.10</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <groupId>org.graylog2</groupId>
     <artifactId>gelfj</artifactId>
-    <version>1.1.10</version>
+    <version>1.1.11-SNAPSHOT</version>
     <packaging>bundle</packaging>
     <name>gelfj</name>
     <description>GELF implementation in Java and log4j appender without any dependencies.</description>
