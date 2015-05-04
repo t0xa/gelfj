@@ -3,6 +3,7 @@ package org.graylog2;
 import java.io.IOException;
 import java.net.*;
 import java.nio.ByteBuffer;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.DatagramChannel;
 
 public class GelfUDPSender implements GelfSender {
@@ -47,6 +48,11 @@ public class GelfUDPSender implements GelfSender {
 		do {
 
 			try {
+
+				if (!channel.isOpen()) {
+					this.channel = initiateChannel();
+				}
+
 				for (ByteBuffer buffer : bytesList) {
 					channel.write(buffer);
 				}
