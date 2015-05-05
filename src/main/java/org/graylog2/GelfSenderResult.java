@@ -41,4 +41,12 @@ public class GelfSenderResult {
     public int hashCode() {
         return code;
     }
+
+    @Override
+    public String toString() {
+        return "GelfSenderResult{" +
+                "code=" + code +
+                ", e=" + e +
+                '}';
+    }
 }

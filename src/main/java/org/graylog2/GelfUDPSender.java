@@ -24,7 +24,7 @@ public class GelfUDPSender implements GelfSender {
 	public GelfUDPSender(String host, int port) throws IOException {
 		this.host = InetAddress.getByName(host);
 		this.port = port;
-		this.channel = initiateChannel();
+		setChannel(initiateChannel());
 	}
 
 	private DatagramChannel initiateChannel() throws IOException {
@@ -49,12 +49,12 @@ public class GelfUDPSender implements GelfSender {
 
 			try {
 
-				if (!channel.isOpen()) {
-					this.channel = initiateChannel();
+				if (!getChannel().isOpen()) {
+					setChannel(initiateChannel());
 				}
 
 				for (ByteBuffer buffer : bytesList) {
-					channel.write(buffer);
+					getChannel().write(buffer);
 				}
 
 				return GelfSenderResult.OK;
@@ -69,9 +69,17 @@ public class GelfUDPSender implements GelfSender {
 
 	public void close() {
 		try {
-			channel.close();
+			getChannel().close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
+
+    public DatagramChannel getChannel() {
+        return channel;
+    }
+
+    public void setChannel(DatagramChannel channel) {
+        this.channel = channel;
+    }
 }
