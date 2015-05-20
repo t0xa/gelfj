@@ -5,8 +5,11 @@ import org.json.simple.JSONObject;
 import org.junit.Test;
 
 import java.nio.ByteBuffer;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.Date;
 import java.util.Map;
+import java.util.zip.GZIPInputStream;
 
 import static junit.framework.Assert.*;
 import static org.hamcrest.CoreMatchers.is;
@@ -34,10 +37,25 @@ public class GelfMessageTest {
         GelfMessage message = new GelfMessage("Long", longString, new Date().getTime(), "1");
         ByteBuffer[] bytes2 = message.toUDPBuffers();
         assertEquals(2, bytes2.length);
-        assertTrue(bytes2[0].get(10) ==  (byte) 0x00);
-        assertTrue(bytes2[0].get(11) == (byte) 0x02);
-        assertTrue(bytes2[1].get(10) == (byte) 0x01);
-        assertTrue(bytes2[1].get(11) == (byte) 0x02);
+        int size1 = bytes2[0].remaining() - 12;
+        int size2 = bytes2[1].remaining() - 12;
+        byte[] gzArray = new byte[size1 + size2];
+        skipHeader(bytes2[0]);
+        bytes2[0].get(gzArray, 0, size1);
+        skipHeader(bytes2[1]);
+        bytes2[1].get(gzArray, size1, size2);
+        GZIPInputStream gzip = new GZIPInputStream(new ByteArrayInputStream(gzArray));
+        try {
+            while (gzip.read() != -1) {}
+        } catch (IOException e) {
+            fail("GZIP decompression error: " + e.getMessage());
+        }
+    }
+
+    private void skipHeader(ByteBuffer src) {
+        for (int i = 0; i < 12; i++) {
+            src.get();
+        }
     }
 
     @Test
