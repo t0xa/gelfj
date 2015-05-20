@@ -146,9 +146,9 @@ public class GelfMessage {
             if (to >= messageLength) {
                 to = messageLength;
             }
-            
-            byte[] range = new byte[(to - from) + 1];
-            System.arraycopy(messageBytes, from, range, 0, (range.length - 1));            
+
+            byte[] range = new byte[to - from];
+            System.arraycopy(messageBytes, from, range, 0, range.length);
             
             byte[] datagram = concatByteArray(header, range);
             datagrams[idx] = ByteBuffer.allocate(datagram.length);
