@@ -44,7 +44,10 @@ public class GelfMessageFactory {
         if (provider.isExtractStacktrace()) {
             ThrowableInformation throwableInformation = event.getThrowableInformation();
             if (throwableInformation != null) {
-                renderedMessage += "\n\r" + extractStacktrace(throwableInformation);
+                String stackTrace = extractStacktrace(throwableInformation);
+                if (stackTrace != null) {
+                    renderedMessage += "\n\r" + extractStacktrace(throwableInformation);
+                }
             }
         }
 
@@ -104,7 +107,12 @@ public class GelfMessageFactory {
     private static String extractStacktrace(ThrowableInformation throwableInformation) {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
-        throwableInformation.getThrowable().printStackTrace(pw);
-        return sw.toString();
+        Throwable t = throwableInformation.getThrowable();
+        if (t != null) {
+            t.printStackTrace(pw);
+            return sw.toString();
+        } else {
+            return null;
+        }
     }
 }
