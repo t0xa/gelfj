@@ -1,19 +1,6 @@
-buildscript {
-    repositories {
-        maven { url 'http://repo.springsource.org/plugins-release' }
-    }
-    dependencies {
-        classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.5'
-    }
-}
-
 apply plugin: 'idea'
 apply plugin: 'java'
 apply plugin: 'maven'
-apply plugin: 'propdeps'
-apply plugin: 'propdeps-eclipse'
-apply plugin: 'propdeps-idea'
-apply plugin: 'propdeps-maven'
 apply plugin: 'signing'
 
 group = 'com.github.pukkaone'
@@ -50,12 +37,6 @@ def readVersion() {
 def assignVersion() {
     project.version = readVersion()
     project.ext.isReleaseVersion = project.version.find(/^[^-]+-\d+-g.+/) == null
-}
-
-def allProcessResourcesTasks() {
-    sourceSets*.processResourcesTaskName.collect {
-        tasks[it]
-    }
 }
 
 afterEvaluate { project ->
