@@ -2,7 +2,6 @@ package org.graylog2;
 
 import org.apache.log4j.Layout;
 import org.apache.log4j.Level;
-import org.apache.log4j.MDC;
 import org.apache.log4j.spi.LocationInfo;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.ThrowableInformation;
@@ -84,7 +83,7 @@ public class GelfMessageFactory {
             gelfMessage.addField(JAVA_TIMESTAMP, Long.toString(gelfMessage.getJavaTimestamp()));
 
             // Get MDC and add a GELF field for each key/value pair
-            Map<String, Object> mdc = MDC.getContext();
+            Map<String, Object> mdc = event.getProperties();
 
             if (mdc != null) {
                 for (Map.Entry<String, Object> entry : mdc.entrySet()) {
