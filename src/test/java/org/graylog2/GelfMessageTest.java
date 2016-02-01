@@ -88,14 +88,26 @@ public class GelfMessageTest {
         message.setVersion("0.0");
 
         assertThat("Message with empty short message is Valid", message.isValid(), is(true));
-        assertThat("Short message is set to <empty> when null", message.getShortMessage(), is("<empty>"));
+        assertThat("Short message is set to 'null' when null", message.getShortMessage(), is("null"));
 
         message.setFullMessage(null);
-        assertThat("Not valid when not full message set nor short message set", message.isValid(), is(false));
+        assertThat("An empty message is valid (neither full nor short message set)", message.isValid(), is(true));
 
         message.setShortMessage("Hamburg");
         message.setFullMessage(null);
         assertThat("Valid when short message is set", message.isValid(), is(true));
+    }
+
+    @Test
+    public void testZeroLengthMessage() {
+        GelfMessage message = new GelfMessage("", "", 1L, "1");
+
+        message.setHost("localhost");
+        message.setVersion("0.0");
+        assertThat("Message with a zero length short message is Valid",
+          message.isValid(), is(true));
+        assertThat("Short message is set to an empty string when zero length",
+          message.getShortMessage(), is(""));
     }
 
     @Test
