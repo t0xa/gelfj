@@ -41,7 +41,7 @@ public class GelfMessage {
     }
 
     public GelfMessage(String shortMessage, String fullMessage, long timestamp, String level, String line, String file) {
-        this.shortMessage = shortMessage;
+        this.shortMessage = shortMessage != null ? shortMessage : "null";
         this.fullMessage = fullMessage;
         this.javaTimestamp = timestamp;
         this.level = level;
@@ -209,7 +209,7 @@ public class GelfMessage {
     }
 
     public String getShortMessage() {
-        return !isEmpty(shortMessage) ? shortMessage : "<empty>";
+        return shortMessage;
     }
 
     public void setShortMessage(String shortMessage) {
@@ -291,7 +291,7 @@ public class GelfMessage {
     }
 
     private boolean isShortOrFullMessagesExists() {
-        return !isEmpty(shortMessage) || !isEmpty(fullMessage);
+        return shortMessage != null || fullMessage != null;
     }
 
     public boolean isEmpty(String str) {
