@@ -10,6 +10,7 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.zip.GZIPOutputStream;
 
 public class GelfMessage {
@@ -132,10 +133,8 @@ public class GelfMessage {
 
     private void sliceDatagrams(byte[] messageBytes, ByteBuffer[] datagrams) {
         int messageLength = messageBytes.length;
-        byte[] messageId = ByteBuffer.allocate(8)
-                .putInt(getCurrentMillis())       // 4 least-significant-bytes of the time in millis
-                .put(hostBytes)                                // 4 least-significant-bytes of the host
-                .array();
+        byte[] messageId = new byte[8];
+        new Random().nextBytes(messageId);
 
         // Reuse length of datagrams array since this is supposed to be the correct number of datagrams
         int num = datagrams.length;
