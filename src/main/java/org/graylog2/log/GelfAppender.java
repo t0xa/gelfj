@@ -234,7 +234,10 @@ public class GelfAppender extends AppenderSkeleton implements GelfMessageProvide
     }
 
     public void close() {
-        getGelfSender().close();
+        GelfSender x = this.getGelfSender();
+        if (x != null) {
+            x.close();
+        }
     }
 
     public boolean requiresLayout() {
