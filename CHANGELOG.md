@@ -1,6 +1,17 @@
 Gelfj - Changelog
 =================
 
+Release 1.1.14
+--------------
+   
+   7. Fix for issue #90 - https://github.com/t0xa/gelfj/issues/90
+   6. Fix for issue #95 - https://github.com/t0xa/gelfj/issues/95
+   5. Merge pull request #96 from samilaine/zerolenmsgs - https://github.com/t0xa/gelfj/pull/96
+   4. Merge pull request #93 from martin-walsh/issue-92 - Ensure MDC access is safe across all Appender threads (https://github.com/t0xa/gelfj/pull/93)
+   3. Merge pull request #91 from thorgull/master - Fix NPE when throwableInformation.getThrowable() return null.
+   2. Merge pull request #89 from grzegorz-zur/master  - Fixed udp buffer error   
+   1. Merge pull request #88 from arteam/default_tcp - Correct info about transport protocol in graylogHost
+
 Release 1.1.11
 --------------
 
