@@ -13,6 +13,9 @@ import java.util.Map;
  */
 public class DefaultGelfMessageFactory implements GelfMessageFactory {
 
+    private static final String DEFAULT_SHORT_MESSAGE_PATTERN = "%m%nopex";
+    private static final String DEFAULT_FULL_MESSAGE_PATTERN = "%xEx";
+
     private PatternLayout shortPatternLayout;
     private PatternLayout fullPatternLayout;
 
@@ -20,13 +23,13 @@ public class DefaultGelfMessageFactory implements GelfMessageFactory {
         // Short message contains event message and no stack trace.
         shortPatternLayout = new PatternLayout();
         shortPatternLayout.setContext(new LoggerContext());
-        shortPatternLayout.setPattern("%m%nopex");
+        shortPatternLayout.setPattern(DEFAULT_SHORT_MESSAGE_PATTERN);
         shortPatternLayout.start();
 
         // Full message contains stack trace.
         fullPatternLayout = new PatternLayout();
         fullPatternLayout.setContext(new LoggerContext());
-        fullPatternLayout.setPattern("%xEx");
+        fullPatternLayout.setPattern(DEFAULT_FULL_MESSAGE_PATTERN);
         fullPatternLayout.start();
     }
 
@@ -93,5 +96,19 @@ public class DefaultGelfMessageFactory implements GelfMessageFactory {
 
     protected void addMessageField(Map<String, String> map, GelfMessage message, String key, Object value) {
         message.addField(key, value);
+    }
+
+    private void setMessagePattern(PatternLayout patternLayout, String messagePattern) {
+        patternLayout.stop();
+        patternLayout.setPattern(messagePattern);
+        patternLayout.start();
+    }
+
+    public void setShortMessagePattern(String shortMessagePattern) {
+        setMessagePattern(shortPatternLayout, shortMessagePattern);
+    }
+
+    public void setFullMessagePattern(String fullMessagePattern) {
+        setMessagePattern(fullPatternLayout, fullMessagePattern);
     }
 }

@@ -4,10 +4,15 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
 import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.classic.spi.ThrowableProxy;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pukkaone.gelf.protocol.GelfMessage;
+import java.io.IOException;
 import java.util.Collections;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,6 +25,7 @@ public class DefaultGelfMessageFactoryTest {
     private static final String MDC_KEY = "mdcKey";
     private static final String MDC_VALUE = "mdcValue";
     private static final String FACILITY_VALUE = "facility";
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     @Mock
     private GelfAppender appender;
@@ -27,7 +33,7 @@ public class DefaultGelfMessageFactoryTest {
     @Mock
     private ILoggingEvent event;
 
-    private GelfMessageFactory marshaller;
+    private DefaultGelfMessageFactory marshaller;
 
     @Before
     public void beforeMethod() throws Exception {
@@ -73,5 +79,52 @@ public class DefaultGelfMessageFactoryTest {
         GelfMessage message = marshaller.createMessage(appender, event);
 
         assertEquals(FACILITY_VALUE, message.getField(GelfMessage.FACILITY));
+    }
+
+    private JsonNode createMessageAsJson() throws IOException {
+        String json = marshaller.createMessage(appender, event).toJson();
+        return OBJECT_MAPPER.readTree(json);
+    }
+
+    @Test
+    public void should_use_default_short_message_format() throws IOException {
+        when(event.getFormattedMessage()).thenReturn("log message");
+
+        JsonNode result = createMessageAsJson();
+
+        assertEquals("log message", result.get("short_message").textValue());
+    }
+
+    @Test
+    public void should_use_default_full_message_format() throws IOException {
+        when(event.getFormattedMessage()).thenReturn("log message");
+        RuntimeException exception = new RuntimeException("whoops");
+        when(event.getThrowableProxy()).thenReturn(new ThrowableProxy(exception));
+
+        JsonNode result = createMessageAsJson();
+
+        assertTrue(result.get("full_message").textValue().startsWith(exception.toString()));
+    }
+
+    @Test
+    public void should_use_custom_short_message_format() throws IOException {
+        when(event.getFormattedMessage()).thenReturn("a very long log message a very long log message");
+
+        marshaller.setShortMessagePattern("%.-23m");
+
+        JsonNode result = createMessageAsJson();
+
+        assertEquals("a very long log message", result.get("short_message").textValue());
+    }
+
+    @Test
+    public void should_use_custom_full_message_format() throws IOException {
+        when(event.getFormattedMessage()).thenReturn("log message");
+
+        marshaller.setFullMessagePattern("%.-1m");
+
+        JsonNode result = createMessageAsJson();
+
+        assertEquals("l", result.get("full_message").textValue());
     }
 }

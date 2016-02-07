@@ -128,3 +128,28 @@ Configure the custom GELF message factory in the appender:
   ...
 </appender>
 --
+
+If you just want to customize the `short_message` and `full_message` fields of
+the GELF messages sent by the appender, you can customize the
+`DefaultGelfMessageFactory` to apply different patterns.
+
+Configure the default GELF message factory in the appender:
+[source,xml]
+--
+<appender name="GRAYLOG2" class="com.github.pukkaone.gelf.logback.GelfAppender">
+  ...
+  <marshaller class="com.github.pukkaone.gelf.logback.DefaultGelfMessageFactory">
+    <shortMessagePattern>%.-20m</shortMessagePattern> <!-- at most 20 initial characters -->
+    <fullMessagePattern>%m%n%xEx</fullMessagePattern> <!-- log message, newline, and stack trace -->
+  </marshaller>
+  ...
+</appender>
+--
+
+The default patterns are:
+
+`shortMessagePattern`::
+    `%m%nopex` - log message, excludes stack trace
+
+`fullMessagePattern`::
+    `%xEx` - stack trace
