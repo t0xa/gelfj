@@ -14,7 +14,7 @@ import java.util.UUID;
 
 public class GelfAMQPSender extends GelfSender {
 
-    private boolean shutdown = false;
+    private volatile boolean shutdown = false;
 
     private ConnectionFactory factory;
     private Connection connection;
@@ -36,6 +36,43 @@ public class GelfAMQPSender extends GelfSender {
         this.maxRetries = maxRetries;
     }
 
+    private synchronized Connection getConnection() throws IOException {
+        if (connection == null) {
+            connection = factory.newConnection();
+        }
+        return connection;
+    }
+
+    private synchronized void closeConnection() {
+        if (connection != null) {
+            try {
+                connection.close();
+            } catch (IOException e) {
+                // Ignore exception closing connection.
+            }
+            connection = null;
+        }
+    }
+
+    private synchronized Channel getChannel() throws IOException {
+        if (channel == null) {
+            channel = getConnection().createChannel();
+            channel.confirmSelect();
+        }
+        return channel;
+    }
+
+    private synchronized void closeChannel() {
+        if (channel != null) {
+            try {
+                channel.close();
+            } catch (IOException e) {
+                // Ignore exception closing channel.
+            }
+            channel = null;
+        }
+    }
+
     private ByteBuffer toAMQPBuffer(String json) {
         byte[] messageBytes = gzipMessage(json);
         ByteBuffer buffer = ByteBuffer.allocate(messageBytes.length);
@@ -55,11 +92,7 @@ public class GelfAMQPSender extends GelfSender {
         int tries = 0;
         do {
             try {
-                // establish the connection the first time
-                if (channel == null) {
-                    connection = factory.newConnection();
-                    channel = connection.createChannel();
-                }
+                Channel channel = getChannel();
 
                 BasicProperties.Builder propertiesBuilder = new BasicProperties.Builder();
                 propertiesBuilder.contentType("application/json; charset=utf-8");
@@ -76,8 +109,9 @@ public class GelfAMQPSender extends GelfSender {
                 channel.waitForConfirms();
 
                 return true;
-            } catch (Exception e) {
-                channel = null;
+            } catch (InterruptedException | IOException e) {
+                closeChannel();
+                closeConnection();
                 tries++;
             }
         } while (tries <= maxRetries || maxRetries < 0);
@@ -87,16 +121,7 @@ public class GelfAMQPSender extends GelfSender {
 
     public void close() {
         shutdown = true;
-        try {
-            channel.close();
-        } catch (Exception e) {
-            // Ignore exception closing channel.
-        }
-
-        try {
-            connection.close();
-        } catch (Exception e) {
-            // Ignore exception closing connection.
-        }
+        closeChannel();
+        closeConnection();
     }
 }
