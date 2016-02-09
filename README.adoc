@@ -1,6 +1,6 @@
 = Logback appender that sends GELF messages
 
-Send log events to a Graylog2 server by GELF protocol over UDP, TCP, TCP over
+Send log events to a Graylog server by GELF protocol over UDP, TCP, TCP over
 SSL, or AMQP transport.
 
 
@@ -13,7 +13,7 @@ Add the following dependency to your project:
 <dependency>
   <groupId>com.github.pukkaone</groupId>
   <artifactId>logback-gelf</artifactId>
-  <version>1.1.7</version>
+  <version>1.1.8</version>
 </dependency>
 --
 
@@ -21,8 +21,8 @@ Configure a logback appender to send by UDP (XML configuration format):
 
 [source,xml]
 --
-<appender name="GRAYLOG2" class="com.github.pukkaone.gelf.logback.GelfAppender">
-  <graylogHost>graylog2.example.com</graylogHost>
+<appender name="GRAYLOG" class="com.github.pukkaone.gelf.logback.GelfAppender">
+  <graylogHost>graylog.example.com</graylogHost>
   <originHost>my.machine.example.com</originHost>
   <levelIncluded>true</levelIncluded>
   <locationIncluded>false</locationIncluded>
@@ -40,7 +40,7 @@ To send by AMQP:
 
 [source,xml]
 --
-<appender name="GRAYLOG2" class="com.github.pukkaone.gelf.logback.GelfAppender">
+<appender name="GRAYLOG" class="com.github.pukkaone.gelf.logback.GelfAppender">
   <amqpURI>amqp://amqp.example.com</amqpURI>
   <amqpExchange>messages</amqpExchange>
   <amqpRoutingKey>gelfudp</amqpRoutingKey>
@@ -56,14 +56,14 @@ To send by AMQP:
 == Options
 
 `graylogHost`::
-    Host name of Graylog2 server where it will send the GELF messages.
+    Host name of Graylog server where it will send the GELF messages.
     Prefix with `udp:` to send by UDP.
     Prefix with `tcp:` to send by TCP.
     Prefix with `ssl:` to send by TCP over SSL.
     If no prefix is present, then the transport is UDP.
 
 `graylogPort`::
-    Port on which the Graylog2 server is listening; default 12201 (*optional*)
+    Port on which the Graylog server is listening; default 12201 (*optional*)
 
 `originHost`::
     Name of the originating host; defaults to the local hostname (*optional*)
@@ -95,11 +95,11 @@ To send by AMQP:
     AMQP URI (*required when using AMQP integration*)
 
 `amqpExchange`::
-    AMQP exchange name - should be the same as setup in graylog2-radio
+    AMQP exchange name - should be the same as setup in graylog-radio
     (*required when using AMQP integration*)
 
 `amqpRoutingKey`::
-    AMQP routing key - should be the same as setup in graylog2-radio
+    AMQP routing key - should be the same as setup in graylog-radio
     (*required when using AMQP integration*)
 
 `amqpMaxRetries`::
@@ -120,7 +120,7 @@ class, which implements this interface.
 Configure the custom GELF message factory in the appender:
 [source,xml]
 --
-<appender name="GRAYLOG2" class="com.github.pukkaone.gelf.logback.GelfAppender">
+<appender name="GRAYLOG" class="com.github.pukkaone.gelf.logback.GelfAppender">
   ...
   <marshaller class="com.example.MyGelfMessageFactory">
     <mdcTimestampProperty>ReceivedDateTime</mdcTimestampProperty>
@@ -136,7 +136,7 @@ the GELF messages sent by the appender, you can customize the
 Configure the default GELF message factory in the appender:
 [source,xml]
 --
-<appender name="GRAYLOG2" class="com.github.pukkaone.gelf.logback.GelfAppender">
+<appender name="GRAYLOG" class="com.github.pukkaone.gelf.logback.GelfAppender">
   ...
   <marshaller class="com.github.pukkaone.gelf.logback.DefaultGelfMessageFactory">
     <shortMessagePattern>%.-20m</shortMessagePattern> <!-- at most 20 initial characters -->
