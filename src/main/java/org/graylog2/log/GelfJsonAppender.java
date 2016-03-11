@@ -27,7 +27,8 @@ public class GelfJsonAppender extends GelfAppender {
 
     if (fields != null) {
       for (String key : fields.keySet()) {
-        gelfMessage.addField(key, fields.get(key));
+        // gelfMessage.addField(key, fields.get(key));
+        gelfMessage.getAdditonalFields().put(key, fields.get(key));
       }
     }
 
