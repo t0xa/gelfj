@@ -104,6 +104,15 @@ GelfAppender supports the following options:
 - **amqpRoutingKey**: AMQP Routing key - should be the same as setup in graylog2-radio (*required when using AMQP integration*)
 - **amqpMaxRetries**: Retries count; default value 0 (*optional*)
 
+Automatically populating fields from a JSON message
+------------
+
+`GelfJsonAppender` is also available at `org.graylog2.log.GelfJsonAppender`. This appender is exactly the same as `GelfAppender` except that if you give it a parseable JSON string in the log4j message, then it will automatically set additional fields according to that JSON.
+
+For example, given the log4j message `"{\"simpleProperty\":\"hello gelf\"}"`, the `GelfJsonAppender` will automatically add the additional field *simpleProperty* to your GELF logging. These fields are in addition to everything else. 
+
+The `GelfJsonAppender` is fail safe. If the given log4j message cannot be parsed as JSON, then the message will still be logged, but there will be no additional fields derived from the message.
+
 Logging Handler
 ---------------
 
