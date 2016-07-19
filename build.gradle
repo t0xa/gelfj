@@ -15,7 +15,7 @@ repositories {
 dependencies {
     compile "ch.qos.logback:logback-classic:1.1.7"
     compile "com.fasterxml.jackson.core:jackson-databind:2.3.0"
-    compile "com.rabbitmq:amqp-client:3.0.4"
+    compile "com.rabbitmq:amqp-client:3.6.3"
     // Logback 1.1.7 pulls in a buggy SLF4J version. Explicitly specify the
     // fixed SLF4J version.
     // TODO: Remove this dependency when upgrading logback to a version that

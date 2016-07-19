@@ -5,12 +5,13 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import java.io.IOException;
-import java.net.*;
+import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.UUID;
+import java.util.concurrent.TimeoutException;
 
 public class GelfAMQPSender extends GelfSender {
 
@@ -36,7 +37,7 @@ public class GelfAMQPSender extends GelfSender {
         this.maxRetries = maxRetries;
     }
 
-    private synchronized Connection getConnection() throws IOException {
+    private synchronized Connection getConnection() throws IOException, TimeoutException {
         if (connection == null) {
             connection = factory.newConnection();
         }
@@ -54,7 +55,7 @@ public class GelfAMQPSender extends GelfSender {
         }
     }
 
-    private synchronized Channel getChannel() throws IOException {
+    private synchronized Channel getChannel() throws IOException, TimeoutException {
         if (channel == null) {
             channel = getConnection().createChannel();
             channel.confirmSelect();
@@ -66,7 +67,7 @@ public class GelfAMQPSender extends GelfSender {
         if (channel != null) {
             try {
                 channel.close();
-            } catch (IOException e) {
+            } catch (IOException | TimeoutException e) {
                 // Ignore exception closing channel.
             }
             channel = null;
@@ -109,7 +110,7 @@ public class GelfAMQPSender extends GelfSender {
                 channel.waitForConfirms();
 
                 return true;
-            } catch (InterruptedException | IOException e) {
+            } catch (InterruptedException | IOException | TimeoutException e) {
                 closeChannel();
                 closeConnection();
                 tries++;
