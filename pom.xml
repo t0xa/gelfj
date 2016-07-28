@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.github.pukkaone</groupId>
   <artifactId>logback-gelf</artifactId>
-  <version>1.1.9-SNAPSHOT</version>
+  <version>1.1.9</version>
   <name>logback-gelf</name>
   <description>Logback appender that sends GELF messages</description>
   <parent>
@@ -68,6 +67,6 @@
 		<connection>scm:git:ssh://git@gitlab.corp.olacabs.com:2222/platform/logback-gelf.git</connection>
 		<url>scm:git:ssh://git@gitlab.corp.olacabs.com:2222/platform/logback-gelf.git</url>
 		<developerConnection>scm:git:https://gitlab.corp.olacabs.com/platform/logback-gelf.git</developerConnection>
-		<tag>HEAD</tag>
+		<tag>1.1.9</tag>
 	</scm>
 </project>
