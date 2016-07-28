@@ -6,6 +6,8 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 
+import com.github.pukkaone.gelf.constants.TCPDelimiter;
+
 public class GelfTCPSender extends GelfSender {
 
     private boolean shutdown;
@@ -13,6 +15,7 @@ public class GelfTCPSender extends GelfSender {
     private int port;
     private Socket socket;
     private OutputStreamWriter writer;
+    private TCPDelimiter delimiter;
 
     private OutputStreamWriter getWriter() throws IOException {
         if (socket == null) {
@@ -26,11 +29,26 @@ public class GelfTCPSender extends GelfSender {
         return new Socket(host, port);
     }
 
-    public GelfTCPSender(String host, int port) throws IOException {
+    public GelfTCPSender(String host, int port, TCPDelimiter delimiter) throws IOException {
         this.host = InetAddress.getByName(host);
         this.port = port;
+        this.delimiter = getTcpDelimiter(delimiter);
     }
 
+    public GelfTCPSender(String host, int port) throws IOException {
+       this(host,port,TCPDelimiter.NULL);
+    }
+
+	private TCPDelimiter getTcpDelimiter(TCPDelimiter delimiter)
+    {
+    	if(delimiter == null)
+    	{
+    		return TCPDelimiter.NULL;
+    	}
+    	
+    	return delimiter;
+    }
+    
     public boolean sendMessage(GelfMessage message) {
         if (shutdown || !message.isValid()) {
             return false;
@@ -42,7 +60,7 @@ public class GelfTCPSender extends GelfSender {
             // See: https://github.com/Graylog2/graylog2-server/issues/127
             OutputStreamWriter writer = getWriter();
             writer.write(message.toJson());
-            writer.write('\0');
+            writer.write(delimiter.toString());
             writer.flush();
             return true;
         } catch (IOException e) {

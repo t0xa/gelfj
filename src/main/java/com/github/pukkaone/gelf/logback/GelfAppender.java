@@ -2,6 +2,8 @@ package com.github.pukkaone.gelf.logback;
 
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.AppenderBase;
+
+import com.github.pukkaone.gelf.constants.TCPDelimiter;
 import com.github.pukkaone.gelf.protocol.GelfAMQPSender;
 import com.github.pukkaone.gelf.protocol.GelfMessage;
 import com.github.pukkaone.gelf.protocol.GelfSSLSender;
@@ -41,8 +43,23 @@ public class GelfAppender extends AppenderBase<ILoggingEvent> {
     private boolean sslTrustAllCertificates;
     private GelfMessageFactory marshaller = new DefaultGelfMessageFactory();
     private GelfSender gelfSender;
+    private TCPDelimiter delimiter;
 
-    public String getGraylogHost() {
+    /**
+	 * @return the delimiter
+	 */
+	public TCPDelimiter getTCPDelimiter() {
+		return delimiter;
+	}
+
+	/**
+	 * @param delimiter the delimiter to set
+	 */
+	public void setTCPDelimiter(TCPDelimiter delimiter) {
+		this.delimiter = delimiter;
+	}
+
+	public String getGraylogHost() {
         return graylogHost;
     }
 
@@ -205,10 +222,10 @@ public class GelfAppender extends AppenderBase<ILoggingEvent> {
         return new GelfUDPSender(graylogHost, graylogPort);
     }
 
-    private GelfTCPSender getGelfTCPSender(String graylogHost, int graylogPort)
+    private GelfTCPSender getGelfTCPSender(String graylogHost, int graylogPort, TCPDelimiter delimiter)
         throws IOException
     {
-        return new GelfTCPSender(graylogHost, graylogPort);
+        return new GelfTCPSender(graylogHost, graylogPort, delimiter);
     }
 
     private GelfSSLSender getGelfSSLSender(
@@ -245,7 +262,7 @@ public class GelfAppender extends AppenderBase<ILoggingEvent> {
                 gelfSender = getGelfSSLSender(sslGraylogHost, graylogPort, sslTrustAllCertificates);
             } else if (graylogHost != null && graylogHost.startsWith("tcp:")) {
                 String tcpGraylogHost = graylogHost.substring(4);
-                gelfSender = getGelfTCPSender(tcpGraylogHost, graylogPort);
+                gelfSender = getGelfTCPSender(tcpGraylogHost, graylogPort, delimiter);
             } else if (graylogHost != null && graylogHost.startsWith("udp:")) {
                 String udpGraylogHost = graylogHost.substring(4);
                 gelfSender = getGelfUDPSender(udpGraylogHost, graylogPort);
