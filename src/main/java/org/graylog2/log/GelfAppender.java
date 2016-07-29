@@ -7,6 +7,7 @@ import org.graylog2.GelfMessage;
 import org.graylog2.GelfMessageFactory;
 import org.graylog2.GelfMessageProvider;
 import org.graylog2.GelfSender;
+import org.graylog2.constants.TCPDelimiter;
 import org.json.simple.JSONValue;
 
 import java.io.IOException;
@@ -42,6 +43,8 @@ public class GelfAppender extends AppenderSkeleton implements GelfMessageProvide
     private boolean addExtendedInformation;
     private boolean includeLocation = true;
     private Map<String, String> fields;
+    private TCPDelimiter delimiter;
+
 
     public GelfAppender() {
         super();
@@ -161,6 +164,20 @@ public class GelfAppender extends AppenderSkeleton implements GelfMessageProvide
         return Collections.unmodifiableMap(fields);
     }
     
+    /**
+	 * @return the delimiter
+	 */
+	public TCPDelimiter getTCPDelimiter() {
+		return delimiter;
+	}
+
+	/**
+	 * @param delimiter the delimiter to set
+	 */
+	public void setTCPDelimiter(TCPDelimiter delimiter) {
+		this.delimiter = delimiter;
+	}
+	
     public Object transformExtendedField(String field, Object object) {
         if (object != null)
             return object.toString();
@@ -177,7 +194,7 @@ public class GelfAppender extends AppenderSkeleton implements GelfMessageProvide
             try {
                 if (graylogHost != null && graylogHost.startsWith("tcp:")) {
                     String tcpGraylogHost = graylogHost.substring(4);
-                    gelfSender = getGelfTCPSender(tcpGraylogHost, graylogPort);
+                    gelfSender = getGelfTCPSender(tcpGraylogHost, graylogPort, delimiter);
                 } else if (graylogHost != null && graylogHost.startsWith("udp:")) {
                     String udpGraylogHost = graylogHost.substring(4);
                     gelfSender = getGelfUDPSender(udpGraylogHost, graylogPort);
@@ -206,6 +223,11 @@ public class GelfAppender extends AppenderSkeleton implements GelfMessageProvide
         return new GelfUDPSender(udpGraylogHost, graylogPort);
     }
 
+    
+    protected GelfTCPSender getGelfTCPSender(String tcpGraylogHost, int graylogPort, TCPDelimiter delimiter) throws IOException {
+        return new GelfTCPSender(tcpGraylogHost, graylogPort, delimiter);
+    }
+    
     protected GelfTCPSender getGelfTCPSender(String tcpGraylogHost, int graylogPort) throws IOException {
         return new GelfTCPSender(tcpGraylogHost, graylogPort);
     }

@@ -4,22 +4,41 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.*;
 
+import org.graylog2.constants.TCPDelimiter;
+
 public class GelfTCPSender implements GelfSender {
 	private boolean shutdown = false;
 	private InetAddress host;
 	private int port;
 	private Socket socket;
     private OutputStream os;
+    private TCPDelimiter delimiter;
 
-    public GelfTCPSender() {
+    public GelfTCPSender(String tcpGraylogHost, int graylogPort, TCPDelimiter delimiter) throws IOException
+    {
+    	this.host = InetAddress.getByName(tcpGraylogHost);
+		this.port = graylogPort;
+		this.socket = new Socket(tcpGraylogHost, port);
+        this.os = socket.getOutputStream();
+        this.delimiter = getTcpDelimiter(delimiter);
     }
 
 	public GelfTCPSender(String host, int port) throws IOException {
-		this.host = InetAddress.getByName(host);
-		this.port = port;
-		this.socket = new Socket(host, port);
-        this.os = socket.getOutputStream();
+		this(host,port,TCPDelimiter.NULL);
 	}
+	
+	 public GelfTCPSender() {
+	    }
+	 
+	 private TCPDelimiter getTcpDelimiter(TCPDelimiter delimiter)
+	    {
+	    	if(delimiter == null)
+	    	{
+	    		return TCPDelimiter.NULL;
+	    	}
+	    	
+	    	return delimiter;
+	    }
 
 	public GelfSenderResult sendMessage(GelfMessage message) {
 		if (shutdown || !message.isValid()) {
@@ -33,7 +52,7 @@ public class GelfTCPSender implements GelfSender {
                 os = socket.getOutputStream();
 			}
 
-            os.write(message.toTCPBuffer().array());
+            os.write(message.toTCPBuffer(delimiter).array());
 
 			return GelfSenderResult.OK;
 		} catch (IOException e) {
