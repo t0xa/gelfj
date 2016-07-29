@@ -18,7 +18,7 @@ public class GelfTCPSender implements GelfSender {
     {
     	this.host = InetAddress.getByName(tcpGraylogHost);
 		this.port = graylogPort;
-		this.socket = new Socket(tcpGraylogHost, port);
+		this.socket = new Socket(this.host, port);
         this.os = socket.getOutputStream();
         this.delimiter = getTcpDelimiter(delimiter);
     }
