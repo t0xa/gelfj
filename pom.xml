@@ -2,12 +2,12 @@
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.olacabs</groupId>
-  <artifactId>logback-gelf</artifactId>
-  <version>1.1.11-PATCHED-SNAPSHOT</version>
+  <groupId>com.github.pukkaone</groupId>
+  <artifactId>logback-gelf-patched</artifactId>
+  <version>1.1.12-SNAPSHOT</version>
   <name>logback-gelf</name>
   <description>Logback appender that sends GELF messages</description>
-  <parent>
+   <parent>
      <groupId>com.olacabs</groupId>
      <artifactId>ola-libs-master-pom</artifactId>
      <version>0.0.5</version>
