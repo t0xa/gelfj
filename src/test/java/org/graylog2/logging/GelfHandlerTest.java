@@ -1,10 +1,10 @@
 package org.graylog2.logging;
 
-import org.hamcrest.CoreMatchers;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,8 +14,9 @@ import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.*;
+import org.hamcrest.CoreMatchers;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author lkmikkel
