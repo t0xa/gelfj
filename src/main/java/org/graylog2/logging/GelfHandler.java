@@ -98,7 +98,7 @@ public class GelfHandler
 
 
     private String getOriginHost() {
-        if (null == originHost) {
+        if (null == originHost || originHost.isEmpty()) {
             originHost = getLocalHostName();
         }
         return originHost;

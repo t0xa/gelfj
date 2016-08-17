@@ -1,6 +1,10 @@
 package org.graylog2.log;
 
-import junit.framework.TestCase;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+
+import java.io.IOException;
+
 import org.apache.log4j.Category;
 import org.apache.log4j.Level;
 import org.apache.log4j.spi.LoggingEvent;
@@ -10,12 +14,6 @@ import org.graylog2.GelfSenderResult;
 import org.graylog2.GelfUDPSender;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.io.IOException;
-
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
 
 public class GelfJsonAppenderTest {
 
