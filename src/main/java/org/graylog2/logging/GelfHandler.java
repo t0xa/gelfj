@@ -15,6 +15,7 @@ import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.IllegalFormatConversionException;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.*;
 
 public class GelfHandler
@@ -215,6 +216,13 @@ public class GelfHandler
                         String.valueOf(levelToSyslogLevel(record.getLevel())));
         gelfMessage.addField("SourceClassName", record.getSourceClassName());
         gelfMessage.addField("SourceMethodName", record.getSourceMethodName());
+        
+        if (record instanceof GelfLogRecord) {
+        	GelfLogRecord gelfLogRecord = (GelfLogRecord)record;
+        	for (Entry<String, Object> field : gelfLogRecord.getFields().entrySet()) {
+        		gelfMessage.addField(field.getKey(), field.getValue());
+        	}
+        }        
 
         if (null != getOriginHost()) {
             gelfMessage.setHost(getOriginHost());
