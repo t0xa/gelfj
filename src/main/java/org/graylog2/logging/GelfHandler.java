@@ -32,6 +32,7 @@ public class GelfHandler
     private GelfSender gelfSender;
     private boolean extractStacktrace;
     private Map<String, String> fields;
+    private volatile boolean closed;
 
     public GelfHandler() {
         final LogManager manager = LogManager.getLogManager();
@@ -115,42 +116,15 @@ public class GelfHandler
     }
 
     @Override
-    public synchronized void publish(final LogRecord record) {
-        if (!isLoggable(record)) {
-            return;
+    public void publish(final LogRecord record) {
+        if (!closed && isLoggable(record)) {
+            send(record);
         }
+    }
+    
+    private synchronized void send(LogRecord record) {
         if (null == gelfSender) {
-            if (graylogHost == null && amqpURI == null) {
-                reportError("Graylog2 hostname and amqp uri are empty!", null, ErrorManager.WRITE_FAILURE);
-            } else if (graylogHost != null && amqpURI != null) {
-                reportError("Graylog2 hostname and amqp uri are both informed!", null, ErrorManager.WRITE_FAILURE);
-            } else {
-                try {
-                    if (graylogHost.startsWith("tcp:")) {
-                        String tcpGraylogHost = graylogHost.substring(4, graylogHost.length());
-                        gelfSender = new GelfTCPSender(tcpGraylogHost, graylogPort);
-                    } else if (graylogHost.startsWith("udp:")) {
-                        String udpGraylogHost = graylogHost.substring(4, graylogHost.length());
-                        gelfSender = new GelfUDPSender(udpGraylogHost, graylogPort);
-                    } else if (amqpURI != null) {
-                        gelfSender = new GelfAMQPSender(amqpURI, amqpExchangeName, amqpRoutingKey, amqpMaxRetries);
-                    } else {
-                        gelfSender = new GelfUDPSender(graylogHost, graylogPort);
-                    }
-                } catch (UnknownHostException e) {
-                    reportError("Unknown Graylog2 hostname:" + graylogHost, e, ErrorManager.WRITE_FAILURE);
-                } catch (SocketException e) {
-                    reportError("Socket exception", e, ErrorManager.WRITE_FAILURE);
-                } catch (IOException e) {
-                    reportError("IO exception", e, ErrorManager.WRITE_FAILURE);
-                } catch (URISyntaxException e) {
-                    reportError("AMQP uri exception", e, ErrorManager.WRITE_FAILURE);
-                } catch (NoSuchAlgorithmException e) {
-                    reportError("AMQP algorithm exception", e, ErrorManager.WRITE_FAILURE);
-                } catch (KeyManagementException e) {
-                    reportError("AMQP key exception", e, ErrorManager.WRITE_FAILURE);
-                }
-            }
+        	gelfSender = createSender();
         }
         if (null == gelfSender) {
             reportError("Could not send GELF message", null, ErrorManager.WRITE_FAILURE);
@@ -160,14 +134,51 @@ public class GelfHandler
                 reportError("Error during sending GELF message. Error code: " + gelfSenderResult.getCode() + ".", gelfSenderResult.getException(), ErrorManager.WRITE_FAILURE);
             }
         }
+	}
+    
+    private GelfSender createSender() {
+    	GelfSender gelfSender = null;
+        if (graylogHost == null && amqpURI == null) {
+            reportError("Graylog2 hostname and amqp uri are empty!", null, ErrorManager.WRITE_FAILURE);
+        } else if (graylogHost != null && amqpURI != null) {
+            reportError("Graylog2 hostname and amqp uri are both informed!", null, ErrorManager.WRITE_FAILURE);
+        } else {
+            try {
+                if (graylogHost.startsWith("tcp:")) {
+                    String tcpGraylogHost = graylogHost.substring(4, graylogHost.length());
+                    gelfSender = new GelfTCPSender(tcpGraylogHost, graylogPort);
+                } else if (graylogHost.startsWith("udp:")) {
+                    String udpGraylogHost = graylogHost.substring(4, graylogHost.length());
+                    gelfSender = new GelfUDPSender(udpGraylogHost, graylogPort);
+                } else if (amqpURI != null) {
+                    gelfSender = new GelfAMQPSender(amqpURI, amqpExchangeName, amqpRoutingKey, amqpMaxRetries);
+                } else {
+                    gelfSender = new GelfUDPSender(graylogHost, graylogPort);
+                }
+            } catch (UnknownHostException e) {
+                reportError("Unknown Graylog2 hostname:" + graylogHost, e, ErrorManager.WRITE_FAILURE);
+            } catch (SocketException e) {
+                reportError("Socket exception", e, ErrorManager.WRITE_FAILURE);
+            } catch (IOException e) {
+                reportError("IO exception", e, ErrorManager.WRITE_FAILURE);
+            } catch (URISyntaxException e) {
+                reportError("AMQP uri exception", e, ErrorManager.WRITE_FAILURE);
+            } catch (NoSuchAlgorithmException e) {
+                reportError("AMQP algorithm exception", e, ErrorManager.WRITE_FAILURE);
+            } catch (KeyManagementException e) {
+                reportError("AMQP key exception", e, ErrorManager.WRITE_FAILURE);
+            }
+        }
+        return gelfSender;
     }
 
-    @Override
-    public void close() {
+	@Override
+    public synchronized void close() {
         if (null != gelfSender) {
             gelfSender.close();
             gelfSender = null;
         }
+        closed = true;
     }
 
     private GelfMessage makeMessage(final LogRecord record) {
