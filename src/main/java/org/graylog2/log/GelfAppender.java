@@ -36,6 +36,7 @@ public class GelfAppender extends AppenderSkeleton implements GelfMessageProvide
     private int amqpMaxRetries = 0;
     private static String originHost;
     private int graylogPort = 12201;
+    private boolean tcpKeepalive;
     private String facility;
     private GelfSender gelfSender;
     private boolean extractStacktrace;
@@ -59,6 +60,14 @@ public class GelfAppender extends AppenderSkeleton implements GelfMessageProvide
     public void setGraylogPort(int graylogPort) {
         this.graylogPort = graylogPort;
     }
+    
+    public boolean isTcpKeepalive() {
+		return tcpKeepalive;
+	}
+    
+    public void setTcpKeepalive(boolean tcpKeepalive) {
+		this.tcpKeepalive = tcpKeepalive;
+	}
 
     public String getGraylogHost() {
         return graylogHost;
@@ -177,7 +186,7 @@ public class GelfAppender extends AppenderSkeleton implements GelfMessageProvide
             try {
                 if (graylogHost != null && graylogHost.startsWith("tcp:")) {
                     String tcpGraylogHost = graylogHost.substring(4);
-                    gelfSender = getGelfTCPSender(tcpGraylogHost, graylogPort);
+                    gelfSender = getGelfTCPSender(tcpGraylogHost, graylogPort, tcpKeepalive);
                 } else if (graylogHost != null && graylogHost.startsWith("udp:")) {
                     String udpGraylogHost = graylogHost.substring(4);
                     gelfSender = getGelfUDPSender(udpGraylogHost, graylogPort);
@@ -206,8 +215,8 @@ public class GelfAppender extends AppenderSkeleton implements GelfMessageProvide
         return new GelfUDPSender(udpGraylogHost, graylogPort);
     }
 
-    protected GelfTCPSender getGelfTCPSender(String tcpGraylogHost, int graylogPort) throws IOException {
-        return new GelfTCPSender(tcpGraylogHost, graylogPort);
+    protected GelfTCPSender getGelfTCPSender(String tcpGraylogHost, int graylogPort, boolean tcpKeepalive) throws IOException {
+        return new GelfTCPSender(tcpGraylogHost, graylogPort, tcpKeepalive);
     }
 
     protected GelfAMQPSender getGelfAMQPSender(String amqpURI, String amqpExchangeName, String amqpRoutingKey, int amqpMaxRetries) throws IOException, URISyntaxException, NoSuchAlgorithmException, KeyManagementException {
