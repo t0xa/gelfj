@@ -2,7 +2,9 @@ package org.graylog2.sender;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.*;
+import java.nio.ByteBuffer;
 
 import org.graylog2.message.GelfMessage;
 
@@ -11,6 +13,7 @@ public class GelfTCPSender implements GelfSender {
 	private String host;
 	private int port;
 	private int sendBufferSize;
+	private TCPBufferBuilder bufferBuilder;
 	private Socket socket;
 	private OutputStream os;
 
@@ -18,6 +21,7 @@ public class GelfTCPSender implements GelfSender {
 		this.host = host;
 		this.port = port;
 		this.sendBufferSize = sendBufferSize;
+		this.bufferBuilder = new TCPBufferBuilder();
 	}
 
 	public GelfSenderResult sendMessage(GelfMessage message) {
@@ -28,7 +32,7 @@ public class GelfTCPSender implements GelfSender {
 			if (!isConnected()) {
 				connect();
 			}
-			os.write(message.toTCPBuffer().array());
+			os.write(bufferBuilder.toTCPBuffer(message.toJson()).array());
 			return GelfSenderResult.OK;
 		} catch (IOException e) {
 			closeConnection();
@@ -64,5 +68,24 @@ public class GelfTCPSender implements GelfSender {
 	public void close() {
 		shutdown = true;
 		closeConnection();
+	}
+
+	public static class TCPBufferBuilder extends BufferBuilder {
+		public ByteBuffer toTCPBuffer(String message) {
+			byte[] messageBytes;
+			try {
+				// Do not use GZIP, as the headers will contain \0 bytes
+				// graylog2-server uses \0 as a delimiter for TCP frames
+				// see: https://github.com/Graylog2/graylog2-server/issues/127
+				message += '\0';
+				messageBytes = message.getBytes("UTF-8");
+			} catch (UnsupportedEncodingException e) {
+				throw new RuntimeException("No UTF-8 support available.", e);
+			}
+			ByteBuffer buffer = ByteBuffer.allocate(messageBytes.length);
+			buffer.put(messageBytes);
+			buffer.flip();
+			return buffer;
+		}
 	}
 }
