@@ -1,7 +1,5 @@
 package org.graylog2.logging;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.ErrorManager;
@@ -11,6 +9,7 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 
+import org.graylog2.host.HostConfiguration;
 import org.graylog2.message.GelfMessage;
 import org.graylog2.sender.GelfSender;
 import org.graylog2.sender.GelfSenderConfiguration;
@@ -20,41 +19,33 @@ import org.graylog2.sender.GelfSenderResult;
 
 public class GelfHandler extends Handler {
 	private static final int MAX_SHORT_MESSAGE_LENGTH = 250;
-
 	private GelfSenderConfiguration senderConfiguration;
-	private String facility;
-	private String originHost;
+	private HostConfiguration hostConfiguration;
 	private Map<String, String> fields;
 	private GelfSender gelfSender;
 	private boolean closed;
 
 	public GelfHandler() {
-		LogManager manager = LogManager.getLogManager();
-		String prefix = getClass().getName();
-		this.senderConfiguration = JULSenderConfigurationManager.getConfiguration(prefix, manager);
+		JULProperties properties = new JULProperties(LogManager.getLogManager(), getClass().getName());
+		this.hostConfiguration = JULConfigurationManager.getHostConfiguration(properties);
+		this.senderConfiguration = JULConfigurationManager.getGelfSenderConfiguration(properties);
 
-		configure(manager, prefix);
+		configure(properties);
 	}
 
 	public GelfHandler(GelfSenderConfiguration senderConfiguration) {
-		LogManager manager = LogManager.getLogManager();
-		String prefix = getClass().getName();
+		JULProperties properties = new JULProperties(LogManager.getLogManager(), getClass().getName());
+		this.hostConfiguration = JULConfigurationManager.getHostConfiguration(properties);
 		this.senderConfiguration = senderConfiguration;
 
-		configure(manager, prefix);
+		configure(properties);
 	}
 
-	private void configure(LogManager manager, String prefix) {
-		facility = manager.getProperty(prefix + ".facility");
-		originHost = manager.getProperty(prefix + ".originHost");
-		if (originHost == null) {
-			originHost = getLocalHostName();
-		}
-
+	private void configure(JULProperties properties) {
 		int fieldNumber = 0;
 		fields = new HashMap<String, String>();
 		while (true) {
-			final String property = manager.getProperty(prefix + ".additionalField." + fieldNumber);
+			final String property = properties.getProperty("additionalField." + fieldNumber);
 			if (null == property) {
 				break;
 			}
@@ -65,23 +56,22 @@ public class GelfHandler extends Handler {
 			fieldNumber++;
 		}
 
-		final String level = manager.getProperty(prefix + ".level");
+		final String level = properties.getProperty("level");
 		if (null != level) {
 			setLevel(Level.parse(level.trim()));
 		} else {
 			setLevel(Level.INFO);
 		}
 
-		boolean extractStacktrace = "true".equalsIgnoreCase(manager.getProperty(prefix + ".extractStacktrace"));
+		boolean extractStacktrace = "true".equalsIgnoreCase(properties.getProperty("extractStacktrace"));
 		setFormatter(new SimpleFormatter(extractStacktrace));
 
-		final String filter = manager.getProperty(prefix + ".filter");
+		final String filter = properties.getProperty("filter");
 		try {
 			if (null != filter) {
 				setFilter((Filter) getClass().getClassLoader().loadClass(filter).newInstance());
 			}
-		} catch (final Exception e) {
-			// ignore
+		} catch (Exception ignoredException) {
 		}
 	}
 
@@ -90,7 +80,7 @@ public class GelfHandler extends Handler {
 	}
 
 	@Override
-	public void publish(final LogRecord record) {
+	public void publish(LogRecord record) {
 		if (isLoggable(record)) {
 			send(record);
 		}
@@ -124,18 +114,18 @@ public class GelfHandler extends Handler {
 		closed = true;
 	}
 
-	private GelfMessage makeMessage(final LogRecord record) {
+	private GelfMessage makeMessage(LogRecord record) {
 		String message = getFormatter().format(record);
 		final String shortMessage = formatShortMessage(message);
 		final GelfMessage gelfMessage = new GelfMessage(shortMessage, message, record.getMillis(),
 				String.valueOf(levelToSyslogLevel(record.getLevel())));
 		gelfMessage.addField("SourceClassName", record.getSourceClassName());
 		gelfMessage.addField("SourceMethodName", record.getSourceMethodName());
-		if (null != originHost) {
-			gelfMessage.setHost(originHost);
+		if (null != hostConfiguration.getOriginHost()) {
+			gelfMessage.setHost(hostConfiguration.getOriginHost());
 		}
-		if (null != facility) {
-			gelfMessage.setFacility(facility);
+		if (null != hostConfiguration.getFacility()) {
+			gelfMessage.setFacility(hostConfiguration.getFacility());
 		}
 		for (final Map.Entry<String, String> entry : fields.entrySet()) {
 			gelfMessage.addField(entry.getKey(), entry.getValue());
@@ -153,7 +143,7 @@ public class GelfHandler extends Handler {
 		return shortMessage;
 	}
 
-	private int levelToSyslogLevel(final Level level) {
+	private int levelToSyslogLevel(Level level) {
 		final int syslogLevel;
 		if (level.intValue() == Level.SEVERE.intValue()) {
 			syslogLevel = 3;
@@ -169,23 +159,6 @@ public class GelfHandler extends Handler {
 
 	public synchronized void setGelfSender(GelfSender gelfSender) {
 		this.gelfSender = gelfSender;
-	}
-
-	public void setOriginHost(String originHost) {
-		this.originHost = originHost;
-	}
-
-	public void setFacility(String facility) {
-		this.facility = facility;
-	}
-
-	private String getLocalHostName() {
-		try {
-			return InetAddress.getLocalHost().getHostName();
-		} catch (final UnknownHostException uhe) {
-			throw new IllegalStateException(
-					"Origin host could not be resolved automatically. Please set originHost property", uhe);
-		}
 	}
 
 	public void setAdditionalField(String entry) {
