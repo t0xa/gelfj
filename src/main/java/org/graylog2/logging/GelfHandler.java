@@ -13,6 +13,7 @@ import java.util.logging.LogRecord;
 
 import org.graylog2.message.GelfMessage;
 import org.graylog2.sender.GelfSender;
+import org.graylog2.sender.GelfSenderConfiguration;
 import org.graylog2.sender.GelfSenderConfigurationException;
 import org.graylog2.sender.GelfSenderFactory;
 import org.graylog2.sender.GelfSenderResult;
@@ -20,7 +21,7 @@ import org.graylog2.sender.GelfSenderResult;
 public class GelfHandler extends Handler {
 	private static final int MAX_SHORT_MESSAGE_LENGTH = 250;
 
-	private JULGelfSenderConfiguration senderConfiguration;
+	private GelfSenderConfiguration senderConfiguration;
 	private String facility;
 	private String originHost;
 	private Map<String, String> fields;
@@ -35,10 +36,10 @@ public class GelfHandler extends Handler {
 		configure(manager, prefix);
 	}
 
-	public GelfHandler(JULGelfSenderConfiguration jULGelfSenderConfiguration) {
+	public GelfHandler(GelfSenderConfiguration senderConfiguration) {
 		LogManager manager = LogManager.getLogManager();
 		String prefix = getClass().getName();
-		this.senderConfiguration = jULGelfSenderConfiguration;
+		this.senderConfiguration = senderConfiguration;
 
 		configure(manager, prefix);
 	}
