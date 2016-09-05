@@ -12,6 +12,7 @@ import org.apache.log4j.spi.ErrorCode;
 import org.apache.log4j.spi.LoggingEvent;
 import org.graylog2.message.GelfMessage;
 import org.graylog2.sender.GelfSender;
+import org.graylog2.sender.GelfSenderConfiguration;
 import org.graylog2.sender.GelfSenderConfigurationException;
 import org.graylog2.sender.GelfSenderFactory;
 import org.graylog2.sender.GelfSenderResult;
@@ -23,7 +24,7 @@ import org.json.simple.JSONValue;
  * @author Jochen Schalanda
  */
 public class GelfAppender extends AppenderSkeleton implements GelfMessageProvider {
-	private Log4jGelfSenderConfiguration senderConfiguration;
+	private GelfSenderConfiguration senderConfiguration;
     private static String originHost;
     private String facility;
     private GelfSender gelfSender;
@@ -34,7 +35,7 @@ public class GelfAppender extends AppenderSkeleton implements GelfMessageProvide
 
     public GelfAppender() {
         super();
-    	senderConfiguration = new Log4jGelfSenderConfiguration();
+    	senderConfiguration = new GelfSenderConfiguration();
     }
 
     @SuppressWarnings("unchecked")

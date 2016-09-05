@@ -26,12 +26,12 @@ public class GelfHandler extends Handler {
 	private String originHost;
 	private Map<String, String> fields;
 	private GelfSender gelfSender;
-	private volatile boolean closed;
+	private boolean closed;
 
 	public GelfHandler() {
 		LogManager manager = LogManager.getLogManager();
 		String prefix = getClass().getName();
-		this.senderConfiguration = new JULGelfSenderConfiguration(prefix, manager);
+		this.senderConfiguration = JULSenderConfigurationManager.getConfiguration(prefix, manager);
 
 		configure(manager, prefix);
 	}
@@ -91,25 +91,27 @@ public class GelfHandler extends Handler {
 
 	@Override
 	public void publish(final LogRecord record) {
-		if (!closed && isLoggable(record)) {
+		if (isLoggable(record)) {
 			send(record);
 		}
 	}
 
 	private synchronized void send(LogRecord record) {
-		try {
-			if (null == gelfSender) {
-				gelfSender = GelfSenderFactory.getInstance().createSender(senderConfiguration);
+		if (!closed) {
+			try {
+				if (null == gelfSender) {
+					gelfSender = GelfSenderFactory.getInstance().createSender(senderConfiguration);
+				}
+				GelfSenderResult gelfSenderResult = gelfSender.sendMessage(makeMessage(record));
+				if (!GelfSenderResult.OK.equals(gelfSenderResult)) {
+					reportError("Error during sending GELF message. Error code: " + gelfSenderResult.getCode() + ".",
+							gelfSenderResult.getException(), ErrorManager.WRITE_FAILURE);
+				}
+			} catch (GelfSenderConfigurationException exception) {
+				reportError(exception.getMessage(), exception.getCauseException(), ErrorManager.WRITE_FAILURE);
+			} catch (Exception exception) {
+				reportError("Could not send GELF message", exception, ErrorManager.WRITE_FAILURE);
 			}
-			GelfSenderResult gelfSenderResult = gelfSender.sendMessage(makeMessage(record));
-			if (!GelfSenderResult.OK.equals(gelfSenderResult)) {
-				reportError("Error during sending GELF message. Error code: " + gelfSenderResult.getCode() + ".",
-						gelfSenderResult.getException(), ErrorManager.WRITE_FAILURE);
-			}
-		} catch (GelfSenderConfigurationException exception) {
-			reportError(exception.getMessage(), exception.getCauseException(), ErrorManager.WRITE_FAILURE);
-		} catch (Exception exception) {
-			reportError("Could not send GELF message", exception, ErrorManager.WRITE_FAILURE);
 		}
 	}
 
