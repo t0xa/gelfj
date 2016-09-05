@@ -80,15 +80,6 @@ public class GelfHandler extends Handler {
 		} catch (final Exception e) {
 			// ignore
 		}
-		// This only used for testing
-		final String testSender = manager.getProperty(prefix + ".graylogTestSenderClass");
-		try {
-			if (null != testSender) {
-				gelfSender = (GelfSender) getClass().getClassLoader().loadClass(testSender).newInstance();
-			}
-		} catch (final Exception e) {
-			// ignore
-		}
 	}
 
 	@Override
@@ -105,7 +96,7 @@ public class GelfHandler extends Handler {
 	private synchronized void send(LogRecord record) {
 		try {
 			if (null == gelfSender) {
-				gelfSender = new GelfSenderFactory().createSender(senderConfiguration);
+				gelfSender = GelfSenderFactory.getInstance().createSender(senderConfiguration);
 			}
 			GelfSenderResult gelfSenderResult = gelfSender.sendMessage(makeMessage(record));
 			if (!GelfSenderResult.OK.equals(gelfSenderResult)) {
@@ -141,10 +132,8 @@ public class GelfHandler extends Handler {
 		if (null != facility) {
 			gelfMessage.setFacility(facility);
 		}
-		if (null != fields) {
-			for (final Map.Entry<String, String> entry : fields.entrySet()) {
-				gelfMessage.addField(entry.getKey(), entry.getValue());
-			}
+		for (final Map.Entry<String, String> entry : fields.entrySet()) {
+			gelfMessage.addField(entry.getKey(), entry.getValue());
 		}
 		return gelfMessage;
 	}
@@ -173,22 +162,18 @@ public class GelfHandler extends Handler {
 		return syslogLevel;
 	}
 
-	// public void setGraylogPort(int graylogPort) {
-	// this.graylogPort = graylogPort;
-	// }
-	//
-	// public void setOriginHost(String originHost) {
-	// this.originHost = originHost;
-	// }
-	//
-	// public void setGraylogHost(String graylogHost) {
-	// this.graylogHost = graylogHost;
-	// }
-	//
-	// public void setFacility(String facility) {
-	// this.facility = facility;
-	// }
-	//
+	public synchronized void setGelfSender(GelfSender gelfSender) {
+		this.gelfSender = gelfSender;
+	}
+
+	public void setOriginHost(String originHost) {
+		this.originHost = originHost;
+	}
+
+	public void setFacility(String facility) {
+		this.facility = facility;
+	}
+
 	private String getLocalHostName() {
 		try {
 			return InetAddress.getLocalHost().getHostName();

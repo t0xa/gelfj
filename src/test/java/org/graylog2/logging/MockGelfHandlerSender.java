@@ -10,7 +10,7 @@ import java.io.IOException;
  * @author lkmikkel
  */
 public class MockGelfHandlerSender extends GelfUDPSender {
-    private static GelfMessage lastMessage;
+    private GelfMessage lastMessage;
 
     public MockGelfHandlerSender() throws IOException {
         super("localhost");

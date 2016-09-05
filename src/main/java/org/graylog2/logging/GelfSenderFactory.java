@@ -13,6 +13,13 @@ import org.graylog2.GelfTCPSender;
 import org.graylog2.GelfUDPSender;
 
 public class GelfSenderFactory {
+	private GelfSenderFactory() {
+	}
+	
+	public static GelfSenderFactory getInstance() {
+		return new GelfSenderFactory();
+	}
+	
 	public GelfSender createSender(SenderConfiguration configuration) {
 		GelfSender gelfSender = null;
 		if (configuration.getGraylogHost() == null && configuration.getAmqpURI() == null) {
