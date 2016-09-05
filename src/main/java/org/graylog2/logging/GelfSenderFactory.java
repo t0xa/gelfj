@@ -15,11 +15,11 @@ import org.graylog2.GelfUDPSender;
 public class GelfSenderFactory {
 	private GelfSenderFactory() {
 	}
-	
+
 	public static GelfSenderFactory getInstance() {
 		return new GelfSenderFactory();
 	}
-	
+
 	public GelfSender createSender(SenderConfiguration configuration) {
 		GelfSender gelfSender = null;
 		if (configuration.getGraylogHost() == null && configuration.getAmqpURI() == null) {
@@ -32,16 +32,19 @@ public class GelfSenderFactory {
 			if (configuration.getGraylogHost().startsWith("tcp:")) {
 				String tcpGraylogHost = configuration.getGraylogHost().substring(4,
 						configuration.getGraylogHost().length());
-				gelfSender = new GelfTCPSender(tcpGraylogHost, configuration.getGraylogPort());
+				gelfSender = new GelfTCPSender(tcpGraylogHost, configuration.getGraylogPort(),
+						configuration.getSocketSendBufferSize());
 			} else if (configuration.getGraylogHost().startsWith("udp:")) {
 				String udpGraylogHost = configuration.getGraylogHost().substring(4,
 						configuration.getGraylogHost().length());
-				gelfSender = new GelfUDPSender(udpGraylogHost, configuration.getGraylogPort());
+				gelfSender = new GelfUDPSender(udpGraylogHost, configuration.getGraylogPort(),
+						configuration.getSocketSendBufferSize());
 			} else if (configuration.getAmqpURI() != null) {
 				gelfSender = new GelfAMQPSender(configuration.getAmqpURI(), configuration.getAmqpExchangeName(),
 						configuration.getAmqpRoutingKey(), configuration.getAmqpMaxRetries());
 			} else {
-				gelfSender = new GelfUDPSender(configuration.getGraylogHost(), configuration.getGraylogPort());
+				gelfSender = new GelfUDPSender(configuration.getGraylogHost(), configuration.getGraylogPort(),
+						configuration.getSocketSendBufferSize());
 			}
 			return gelfSender;
 		} catch (UnknownHostException e) {

@@ -33,9 +33,10 @@ public class GelfAppender extends AppenderSkeleton implements GelfMessageProvide
     private String amqpURI;
     private String amqpExchangeName;
     private String amqpRoutingKey;
-    private int amqpMaxRetries = 0;
+    private int amqpMaxRetries;
     private static String originHost;
     private int graylogPort = 12201;
+    private int socketSendBufferSize;
     private String facility;
     private GelfSender gelfSender;
     private boolean extractStacktrace;
@@ -52,14 +53,6 @@ public class GelfAppender extends AppenderSkeleton implements GelfMessageProvide
         fields = (Map<String, String>) JSONValue.parse(additionalFields.replaceAll("'", "\""));
     }
 
-    public int getGraylogPort() {
-        return graylogPort;
-    }
-
-    public void setGraylogPort(int graylogPort) {
-        this.graylogPort = graylogPort;
-    }
-
     public String getGraylogHost() {
         return graylogHost;
     }
@@ -67,6 +60,22 @@ public class GelfAppender extends AppenderSkeleton implements GelfMessageProvide
     public void setGraylogHost(String graylogHost) {
         this.graylogHost = graylogHost;
     }
+    
+    public int getGraylogPort() {
+        return graylogPort;
+    }
+
+    public void setGraylogPort(int graylogPort) {
+        this.graylogPort = graylogPort;
+    }
+    
+    public int getSocketSendBufferSize() {
+		return socketSendBufferSize;
+	}
+    
+    public void setSocketSendBufferSize(int socketSendBufferSize) {
+		this.socketSendBufferSize = socketSendBufferSize;
+	}
 
     public String getAmqpURI() {
         return amqpURI;
@@ -202,15 +211,15 @@ public class GelfAppender extends AppenderSkeleton implements GelfMessageProvide
         }
     }
 
-    protected GelfUDPSender getGelfUDPSender(String udpGraylogHost, int graylogPort) throws IOException {
-        return new GelfUDPSender(udpGraylogHost, graylogPort);
+    protected GelfSender getGelfUDPSender(String udpGraylogHost, int graylogPort) throws IOException {
+        return new GelfUDPSender(udpGraylogHost, graylogPort, socketSendBufferSize);
     }
 
-    protected GelfTCPSender getGelfTCPSender(String tcpGraylogHost, int graylogPort) throws IOException {
-        return new GelfTCPSender(tcpGraylogHost, graylogPort);
+    protected GelfSender getGelfTCPSender(String tcpGraylogHost, int graylogPort) throws IOException {
+        return new GelfTCPSender(tcpGraylogHost, graylogPort, socketSendBufferSize);
     }
 
-    protected GelfAMQPSender getGelfAMQPSender(String amqpURI, String amqpExchangeName, String amqpRoutingKey, int amqpMaxRetries) throws IOException, URISyntaxException, NoSuchAlgorithmException, KeyManagementException {
+    protected GelfSender getGelfAMQPSender(String amqpURI, String amqpExchangeName, String amqpRoutingKey, int amqpMaxRetries) throws IOException, URISyntaxException, NoSuchAlgorithmException, KeyManagementException {
         return new GelfAMQPSender(amqpURI, amqpExchangeName, amqpRoutingKey, amqpMaxRetries);
     }
 

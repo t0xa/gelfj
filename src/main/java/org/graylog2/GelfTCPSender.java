@@ -6,54 +6,61 @@ import java.net.*;
 
 public class GelfTCPSender implements GelfSender {
 	private boolean shutdown = false;
-	private InetAddress host;
+	private String host;
 	private int port;
+	private int sendBufferSize;
 	private Socket socket;
-    private OutputStream os;
+	private OutputStream os;
 
-    public GelfTCPSender() {
-    }
-
-	public GelfTCPSender(String host, int port) throws IOException {
-		this.host = InetAddress.getByName(host);
+	public GelfTCPSender(String host, int port, int sendBufferSize) throws IOException {
+		this.host = host;
 		this.port = port;
-		this.socket = new Socket(host, port);
-        this.os = socket.getOutputStream();
+		this.sendBufferSize = sendBufferSize;
 	}
 
 	public GelfSenderResult sendMessage(GelfMessage message) {
 		if (shutdown || !message.isValid()) {
 			return GelfSenderResult.MESSAGE_NOT_VALID_OR_SHUTTING_DOWN;
 		}
-
 		try {
-			// reconnect if necessary
-			if (socket == null || os == null) {
-				socket = new Socket(host, port);
-                os = socket.getOutputStream();
+			if (!isConnected()) {
+				connect();
 			}
-
-            os.write(message.toTCPBuffer().array());
-
+			os.write(message.toTCPBuffer().array());
 			return GelfSenderResult.OK;
 		} catch (IOException e) {
-			// if an error occours, signal failure
-			socket = null;
+			closeConnection();
 			return new GelfSenderResult(GelfSenderResult.ERROR_CODE, e);
+		}
+	}
+
+	private void connect() throws UnknownHostException, IOException, SocketException {
+		socket = new Socket(host, port);
+		socket.setSendBufferSize(sendBufferSize);
+		os = socket.getOutputStream();
+	}
+
+	private boolean isConnected() {
+		return socket != null && os != null;
+	}
+
+	private void closeConnection() {
+		try {
+			os.close();
+		} catch (Exception ignoredException) {
+		} finally {
+			os = null;
+		}
+		try {
+			socket.close();
+		} catch (Exception ignoredException) {
+		} finally {
+			socket = null;
 		}
 	}
 
 	public void close() {
 		shutdown = true;
-		try {
-            if (os != null){
-                os.close();
-            }
-			if (socket != null) {
-				socket.close();
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		closeConnection();
 	}
 }

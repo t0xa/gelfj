@@ -7,26 +7,34 @@ public class SenderConfiguration {
 	private String amqpURI;
 	private String amqpExchangeName;
 	private String amqpRoutingKey;
+	private int socketSendBufferSize;
 	private int amqpMaxRetries;
 	private int graylogPort;
 
 	public SenderConfiguration(String prefix, LogManager manager) {
-		graylogHost = manager.getProperty(prefix + ".graylogHost");
 		final String port = manager.getProperty(prefix + ".graylogPort");
-		graylogPort = null == port ? 12201 : Integer.parseInt(port);
-		amqpURI = manager.getProperty(prefix + ".amqpURI");
-		amqpExchangeName = manager.getProperty(prefix + ".amqpExchangeName");
-		amqpRoutingKey = manager.getProperty(prefix + ".amqpRoutingKey");
+		String sendBufferSize = manager.getProperty(prefix + ".socketSendBufferSize");
 		String maxRetries = manager.getProperty(prefix + ".amqpMaxRetries");
-		amqpMaxRetries = maxRetries == null ? 0 : Integer.valueOf(maxRetries);
+
+		this.graylogHost = manager.getProperty(prefix + ".graylogHost");
+		this.graylogPort = port == null ? 12201 : Integer.parseInt(port);
+		this.amqpURI = manager.getProperty(prefix + ".amqpURI");
+		this.socketSendBufferSize = sendBufferSize == null ? 0 : Integer.parseInt(sendBufferSize);
+		this.amqpExchangeName = manager.getProperty(prefix + ".amqpExchangeName");
+		this.amqpRoutingKey = manager.getProperty(prefix + ".amqpRoutingKey");
+		this.amqpMaxRetries = maxRetries == null ? 0 : Integer.valueOf(maxRetries);
 	}
 
 	public String getGraylogHost() {
 		return graylogHost;
 	}
-	
+
 	public int getGraylogPort() {
 		return graylogPort;
+	}
+
+	public int getSocketSendBufferSize() {
+		return socketSendBufferSize;
 	}
 
 	public String getAmqpURI() {

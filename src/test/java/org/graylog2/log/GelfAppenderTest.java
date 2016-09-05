@@ -28,7 +28,7 @@ public class GelfAppenderTest {
 
     @Before
     public void setUp() throws IOException {
-        gelfSender = new TestGelfSender("localhost");
+        gelfSender = new TestGelfSender();
 
         gelfAppender = new GelfAppender() {
 
@@ -170,12 +170,12 @@ public class GelfAppenderTest {
         GelfAppender testGelfAppender = new GelfAppender() {
 
             @Override
-            protected GelfUDPSender getGelfUDPSender(String udpGraylogHost, int port) throws IOException {
+            protected GelfSender getGelfUDPSender(String udpGraylogHost, int port) throws IOException {
                 return new MockGelfUDPSender(udpGraylogHost, port);
             }
 
             @Override
-            protected GelfTCPSender getGelfTCPSender(String tcpGraylogHost, int port) throws IOException {
+            protected GelfSender getGelfTCPSender(String tcpGraylogHost, int port) throws IOException {
                 return new MockGelfTCPSender(tcpGraylogHost, port);
             }
 
@@ -200,18 +200,15 @@ public class GelfAppenderTest {
         assertThat("No errors when using udp: url", testingEH.getErrorMessage(), is(not("Unknown Graylog2 hostname:www.github.com")));
     }
 
-    private class TestGelfSender extends GelfUDPSender {
-
+    private class TestGelfSender implements GelfSender {
         private GelfMessage lastMessage;
 
-        public TestGelfSender(String host) throws IOException {
-            super(host);
-        }
-
-        @Override
         public GelfSenderResult sendMessage(GelfMessage message) {
             this.lastMessage = message;
             return GelfSenderResult.OK;
+        }
+        
+        public void close() {
         }
 
         public GelfMessage getLastMessage() {
@@ -252,22 +249,33 @@ public class GelfAppenderTest {
         }
     }
 
-    private class MockGelfUDPSender extends GelfUDPSender {
-
+    private class MockGelfUDPSender implements GelfSender {
         private MockGelfUDPSender(String host, int port) throws IOException {
             if (host.contains("udp:")) {
                 throw new UnknownHostException("udp: found in host");
             }
         }
-
+        
+        public GelfSenderResult sendMessage(GelfMessage message) {
+        	return null;
+        }
+        
+        public void close() {
+        }
     }
 
-    private class MockGelfTCPSender extends GelfTCPSender {
-
+    private class MockGelfTCPSender implements GelfSender {
         private MockGelfTCPSender(String host, int port) throws IOException {
             if (host.contains("tcp:")) {
                 throw new UnknownHostException("tcp: found in host");
             }
+        }
+        
+        public GelfSenderResult sendMessage(GelfMessage message) {
+        	return null;
+        }
+        
+        public void close() {
         }
     }
 }

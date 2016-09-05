@@ -13,7 +13,7 @@ public class GelfUDPSenderTest extends TestCase {
 
     @Test
     public void testReopenOfChannel() throws IOException {
-        GelfUDPSender gelfUDPSender = new GelfUDPSender("localhost", 1234);
+        GelfUDPSender gelfUDPSender = new GelfUDPSender("localhost", 1234, 0);
         assertThat(gelfUDPSender.getChannel().isOpen(), is(true));
 
         GelfMessage error = new GelfMessage("Test short", "Test long", new Date().getTime(), "ERROR");
