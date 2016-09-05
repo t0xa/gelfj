@@ -2,9 +2,9 @@ package org.graylog2.logging;
 
 import java.io.IOException;
 
-import org.graylog2.GelfMessage;
-import org.graylog2.GelfSender;
-import org.graylog2.GelfSenderResult;
+import org.graylog2.message.GelfMessage;
+import org.graylog2.sender.GelfSender;
+import org.graylog2.sender.GelfSenderResult;
 
 /**
  * @author lkmikkel

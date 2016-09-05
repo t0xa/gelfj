@@ -1,4 +1,4 @@
-package org.graylog2;
+package org.graylog2.sender;
 
 import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Channel;
@@ -13,6 +13,8 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.UUID;
+
+import org.graylog2.message.GelfMessage;
 
 public class GelfAMQPSender implements GelfSender {
     

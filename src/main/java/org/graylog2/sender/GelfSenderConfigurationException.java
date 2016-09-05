@@ -1,4 +1,4 @@
-package org.graylog2.logging;
+package org.graylog2.sender;
 
 public class GelfSenderConfigurationException extends IllegalStateException {
 	private static final long serialVersionUID = 1L;

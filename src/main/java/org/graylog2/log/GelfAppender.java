@@ -1,26 +1,21 @@
 package org.graylog2.log;
 
-import org.apache.log4j.AppenderSkeleton;
-import org.apache.log4j.spi.ErrorCode;
-import org.apache.log4j.spi.LoggingEvent;
-import org.graylog2.GelfMessage;
-import org.graylog2.GelfMessageFactory;
-import org.graylog2.GelfMessageProvider;
-import org.graylog2.GelfSender;
-import org.json.simple.JSONValue;
-
-import java.io.IOException;
 import java.net.InetAddress;
-import java.net.SocketException;
-import java.net.URISyntaxException;
 import java.net.UnknownHostException;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.ErrorManager;
 
-import org.graylog2.*;
+import org.apache.log4j.AppenderSkeleton;
+import org.apache.log4j.spi.ErrorCode;
+import org.apache.log4j.spi.LoggingEvent;
+import org.graylog2.message.GelfMessage;
+import org.graylog2.sender.GelfSender;
+import org.graylog2.sender.GelfSenderConfigurationException;
+import org.graylog2.sender.GelfSenderFactory;
+import org.graylog2.sender.GelfSenderResult;
+import org.json.simple.JSONValue;
 
 /**
  *
@@ -28,15 +23,8 @@ import org.graylog2.*;
  * @author Jochen Schalanda
  */
 public class GelfAppender extends AppenderSkeleton implements GelfMessageProvider {
-
-    private String graylogHost;
-    private String amqpURI;
-    private String amqpExchangeName;
-    private String amqpRoutingKey;
-    private int amqpMaxRetries;
+	private Log4jGelfSenderConfiguration senderConfiguration;
     private static String originHost;
-    private int graylogPort = 12201;
-    private int socketSendBufferSize;
     private String facility;
     private GelfSender gelfSender;
     private boolean extractStacktrace;
@@ -46,6 +34,7 @@ public class GelfAppender extends AppenderSkeleton implements GelfMessageProvide
 
     public GelfAppender() {
         super();
+    	senderConfiguration = new Log4jGelfSenderConfiguration();
     }
 
     @SuppressWarnings("unchecked")
@@ -54,59 +43,59 @@ public class GelfAppender extends AppenderSkeleton implements GelfMessageProvide
     }
 
     public String getGraylogHost() {
-        return graylogHost;
+        return senderConfiguration.getGraylogHost();
     }
 
     public void setGraylogHost(String graylogHost) {
-        this.graylogHost = graylogHost;
+        senderConfiguration.setGraylogHost(graylogHost);
     }
     
     public int getGraylogPort() {
-        return graylogPort;
+        return senderConfiguration.getGraylogPort();
     }
 
     public void setGraylogPort(int graylogPort) {
-        this.graylogPort = graylogPort;
+    	senderConfiguration.setGraylogPort(graylogPort);
     }
     
     public int getSocketSendBufferSize() {
-		return socketSendBufferSize;
+		return senderConfiguration.getSocketSendBufferSize();
 	}
     
     public void setSocketSendBufferSize(int socketSendBufferSize) {
-		this.socketSendBufferSize = socketSendBufferSize;
+    	senderConfiguration.setSocketSendBufferSize(socketSendBufferSize);
 	}
 
     public String getAmqpURI() {
-        return amqpURI;
+        return senderConfiguration.getAmqpURI();
     }
 
     public void setAmqpURI(String amqpURI) {
-        this.amqpURI = amqpURI;
+    	senderConfiguration.setAmqpURI(amqpURI);
     }
 
     public String getAmqpExchangeName() {
-        return amqpExchangeName;
+        return senderConfiguration.getAmqpExchangeName();
     }
 
     public void setAmqpExchangeName(String amqpExchangeName) {
-        this.amqpExchangeName = amqpExchangeName;
+    	senderConfiguration.setAmqpExchangeName(amqpExchangeName);
     }
 
     public String getAmqpRoutingKey() {
-        return amqpRoutingKey;
+        return senderConfiguration.getAmqpRoutingKey();
     }
 
     public void setAmqpRoutingKey(String amqpRoutingKey) {
-        this.amqpRoutingKey = amqpRoutingKey;
+    	senderConfiguration.setAmqpRoutingKey(amqpRoutingKey);
     }
 
     public int getAmqpMaxRetries() {
-        return amqpMaxRetries;
+        return senderConfiguration.getAmqpMaxRetries();
     }
 
     public void setAmqpMaxRetries(int amqpMaxRetries) {
-        this.amqpMaxRetries = amqpMaxRetries;
+    	senderConfiguration.setAmqpMaxRetries(amqpMaxRetries);
     }
 
     public String getFacility() {
@@ -178,55 +167,21 @@ public class GelfAppender extends AppenderSkeleton implements GelfMessageProvide
 
     @Override
     public void activateOptions() {
-        if (graylogHost == null && amqpURI == null) {
-            errorHandler.error("Graylog2 hostname and amqp uri are empty!", null, ErrorCode.WRITE_FAILURE);
-        } else if (graylogHost != null && amqpURI != null) {
-            errorHandler.error("Graylog2 hostname and amqp uri are both informed!", null, ErrorCode.WRITE_FAILURE);
-        } else {
-            try {
-                if (graylogHost != null && graylogHost.startsWith("tcp:")) {
-                    String tcpGraylogHost = graylogHost.substring(4);
-                    gelfSender = getGelfTCPSender(tcpGraylogHost, graylogPort);
-                } else if (graylogHost != null && graylogHost.startsWith("udp:")) {
-                    String udpGraylogHost = graylogHost.substring(4);
-                    gelfSender = getGelfUDPSender(udpGraylogHost, graylogPort);
-                } else if (amqpURI != null) {
-                    gelfSender = getGelfAMQPSender(amqpURI, amqpExchangeName, amqpRoutingKey, amqpMaxRetries);
-                } else {
-                    gelfSender = getGelfUDPSender(graylogHost, graylogPort);
-                }
-            } catch (UnknownHostException e) {
-                errorHandler.error("Unknown Graylog2 hostname:" + getGraylogHost(), e, ErrorCode.WRITE_FAILURE);
-            } catch (SocketException e) {
-                errorHandler.error("Socket exception", e, ErrorCode.WRITE_FAILURE);
-            } catch (IOException e) {
-                errorHandler.error("IO exception", e, ErrorCode.WRITE_FAILURE);
-            } catch (URISyntaxException e) {
-                errorHandler.error("AMQP uri exception", e, ErrorCode.WRITE_FAILURE);
-            } catch (NoSuchAlgorithmException e) {
-                errorHandler.error("AMQP algorithm exception", e, ErrorCode.WRITE_FAILURE);
-            } catch (KeyManagementException e) {
-                errorHandler.error("AMQP key exception", e, ErrorCode.WRITE_FAILURE);
-            }
-        }
-    }
-
-    protected GelfSender getGelfUDPSender(String udpGraylogHost, int graylogPort) throws IOException {
-        return new GelfUDPSender(udpGraylogHost, graylogPort, socketSendBufferSize);
-    }
-
-    protected GelfSender getGelfTCPSender(String tcpGraylogHost, int graylogPort) throws IOException {
-        return new GelfTCPSender(tcpGraylogHost, graylogPort, socketSendBufferSize);
-    }
-
-    protected GelfSender getGelfAMQPSender(String amqpURI, String amqpExchangeName, String amqpRoutingKey, int amqpMaxRetries) throws IOException, URISyntaxException, NoSuchAlgorithmException, KeyManagementException {
-        return new GelfAMQPSender(amqpURI, amqpExchangeName, amqpRoutingKey, amqpMaxRetries);
+		try {
+			if (gelfSender != null) {
+				gelfSender.close();
+			}
+			gelfSender = GelfSenderFactory.getInstance().createSender(senderConfiguration);
+		} catch (GelfSenderConfigurationException exception) {
+			errorHandler.error(exception.getMessage(), exception.getCauseException(), ErrorManager.WRITE_FAILURE);
+		} catch (Exception exception) {
+			errorHandler.error("Could not activate GELF appender", exception, ErrorManager.WRITE_FAILURE);
+		}    	
     }
 
     @Override
     protected void append(LoggingEvent event) {
         GelfMessage gelfMessage = GelfMessageFactory.makeMessage(layout, event, this);
-
         if(getGelfSender() == null) {
             errorHandler.error("Could not send GELF message. Gelf Sender is not initialised and equals null");
         } else {
@@ -235,7 +190,6 @@ public class GelfAppender extends AppenderSkeleton implements GelfMessageProvide
                 errorHandler.error("Error during sending GELF message. Error code: " + gelfSenderResult.getCode() + ".", gelfSenderResult.getException(), ErrorCode.WRITE_FAILURE);
             }
         }
-
     }
 
     public GelfSender getGelfSender() {

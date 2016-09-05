@@ -1,4 +1,4 @@
-package org.graylog2;
+package org.graylog2.message;
 
 import org.json.simple.JSONValue;
 
@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;

@@ -1,6 +1,7 @@
-package org.graylog2;
+package org.graylog2.message;
 
 import org.json.simple.JSONValue;
+import org.graylog2.message.GelfMessage;
 import org.json.simple.JSONObject;
 import org.junit.Test;
 

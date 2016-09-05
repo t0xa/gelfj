@@ -2,7 +2,9 @@ package org.graylog2.logging;
 
 import java.util.logging.LogManager;
 
-public class SenderConfiguration {
+import org.graylog2.sender.GelfSenderConfiguration;
+
+public class JULGelfSenderConfiguration implements GelfSenderConfiguration {
 	private String graylogHost;
 	private String amqpURI;
 	private String amqpExchangeName;
@@ -11,7 +13,7 @@ public class SenderConfiguration {
 	private int amqpMaxRetries;
 	private int graylogPort;
 
-	public SenderConfiguration(String prefix, LogManager manager) {
+	public JULGelfSenderConfiguration(String prefix, LogManager manager) {
 		final String port = manager.getProperty(prefix + ".graylogPort");
 		String sendBufferSize = manager.getProperty(prefix + ".socketSendBufferSize");
 		String maxRetries = manager.getProperty(prefix + ".amqpMaxRetries");

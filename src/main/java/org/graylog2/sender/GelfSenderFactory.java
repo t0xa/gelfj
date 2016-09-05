@@ -1,4 +1,4 @@
-package org.graylog2.logging;
+package org.graylog2.sender;
 
 import java.io.IOException;
 import java.net.SocketException;
@@ -6,11 +6,6 @@ import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-
-import org.graylog2.GelfAMQPSender;
-import org.graylog2.GelfSender;
-import org.graylog2.GelfTCPSender;
-import org.graylog2.GelfUDPSender;
 
 public class GelfSenderFactory {
 	private GelfSenderFactory() {
@@ -20,7 +15,7 @@ public class GelfSenderFactory {
 		return new GelfSenderFactory();
 	}
 
-	public GelfSender createSender(SenderConfiguration configuration) {
+	public GelfSender createSender(GelfSenderConfiguration configuration) {
 		GelfSender gelfSender = null;
 		if (configuration.getGraylogHost() == null && configuration.getAmqpURI() == null) {
 			throw new GelfSenderConfigurationException("Graylog2 hostname and amqp uri are empty!");

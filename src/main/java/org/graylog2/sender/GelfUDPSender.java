@@ -1,9 +1,11 @@
-package org.graylog2;
+package org.graylog2.sender;
 
 import java.io.IOException;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
+
+import org.graylog2.message.GelfMessage;
 
 public class GelfUDPSender implements GelfSender {
 	private String host;

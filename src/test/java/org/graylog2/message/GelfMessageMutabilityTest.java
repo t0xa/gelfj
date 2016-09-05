@@ -1,6 +1,8 @@
-package org.graylog2;
+package org.graylog2.message;
 
 import com.google.common.collect.ImmutableMap;
+
+import org.graylog2.message.GelfMessage;
 import org.junit.Test;
 
 import java.util.Collections;

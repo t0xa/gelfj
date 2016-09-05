@@ -1,8 +1,10 @@
-package org.graylog2;
+package org.graylog2.sender;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.*;
+
+import org.graylog2.message.GelfMessage;
 
 public class GelfTCPSender implements GelfSender {
 	private boolean shutdown = false;

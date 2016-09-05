@@ -4,9 +4,8 @@ import java.util.Map;
 
 import org.apache.log4j.spi.ErrorCode;
 import org.apache.log4j.spi.LoggingEvent;
-import org.graylog2.GelfMessage;
-import org.graylog2.GelfMessageFactory;
-import org.graylog2.GelfSenderResult;
+import org.graylog2.message.GelfMessage;
+import org.graylog2.sender.GelfSenderResult;
 import org.json.simple.JSONValue;
 
 /**

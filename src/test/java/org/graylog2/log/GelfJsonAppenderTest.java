@@ -8,9 +8,9 @@ import java.io.IOException;
 import org.apache.log4j.Category;
 import org.apache.log4j.Level;
 import org.apache.log4j.spi.LoggingEvent;
-import org.graylog2.GelfMessage;
-import org.graylog2.GelfSender;
-import org.graylog2.GelfSenderResult;
+import org.graylog2.message.GelfMessage;
+import org.graylog2.sender.GelfSender;
+import org.graylog2.sender.GelfSenderResult;
 import org.junit.Before;
 import org.junit.Test;
 

@@ -1,4 +1,4 @@
-package org.graylog2;
+package org.graylog2.log;
 
 import java.util.Map;
 

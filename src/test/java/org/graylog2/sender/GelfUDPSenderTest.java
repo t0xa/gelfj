@@ -1,6 +1,10 @@
-package org.graylog2;
+package org.graylog2.sender;
 
 import junit.framework.TestCase;
+
+import org.graylog2.message.GelfMessage;
+import org.graylog2.sender.GelfSenderResult;
+import org.graylog2.sender.GelfUDPSender;
 import org.junit.Test;
 
 import java.io.IOException;
