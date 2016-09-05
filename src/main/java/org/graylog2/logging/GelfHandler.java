@@ -19,8 +19,8 @@ import org.graylog2.sender.GelfSenderResult;
 
 public class GelfHandler extends Handler {
 	private static final int MAX_SHORT_MESSAGE_LENGTH = 250;
-	private GelfSenderConfiguration senderConfiguration;
 	private HostConfiguration hostConfiguration;
+	private GelfSenderConfiguration senderConfiguration;
 	private Map<String, String> fields;
 	private GelfSender gelfSender;
 	private boolean closed;
