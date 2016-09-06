@@ -1,22 +1,22 @@
-package org.graylog2;
+package org.graylog2.message;
 
-import org.json.simple.JSONValue;
-import org.json.simple.JSONObject;
-import org.junit.Test;
-
-import java.nio.ByteBuffer;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.util.Date;
-import java.util.Map;
-import java.util.zip.GZIPInputStream;
-
-import static junit.framework.Assert.*;
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertNull;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
-public class GelfMessageTest {
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+import org.junit.Test;
+
+import com.google.common.collect.ImmutableMap;
+
+public class GelfMessageTest {
     @Test
     public void testAdditionalFieldsIds() throws Exception {
         GelfMessage message = new GelfMessage("Short", "Long", new Date().getTime(), "1");
@@ -27,44 +27,7 @@ public class GelfMessageTest {
         assertNull(resultingMap.get("_id"));
         assertNotNull(resultingMap.get("__id"));
     }
-
-    @Test
-    public void testSendLongMessage() throws Exception {
-        String longString = "01234567890123456789 ";
-        for (int i = 0; i < 15; i++) {
-            longString += longString;
-        }
-        GelfMessage message = new GelfMessage("Long", longString, new Date().getTime(), "1");
-        ByteBuffer[] bytes2 = message.toUDPBuffers();
-        assertEquals(2, bytes2.length);
-        int size1 = bytes2[0].remaining() - 12;
-        int size2 = bytes2[1].remaining() - 12;
-        byte[] gzArray = new byte[size1 + size2];
-        skipHeader(bytes2[0]);
-        bytes2[0].get(gzArray, 0, size1);
-        skipHeader(bytes2[1]);
-        bytes2[1].get(gzArray, size1, size2);
-        GZIPInputStream gzip = new GZIPInputStream(new ByteArrayInputStream(gzArray));
-        try {
-            while (gzip.read() != -1) {}
-        } catch (IOException e) {
-            fail("GZIP decompression error: " + e.getMessage());
-        }
-    }
-
-    private void skipHeader(ByteBuffer src) {
-        for (int i = 0; i < 12; i++) {
-            src.get();
-        }
-    }
-
-    @Test
-    public void testSimpleMessage() throws Exception {
-        GelfMessage message = new GelfMessage("Short", "Long", new Date().getTime(), "1");
-        ByteBuffer[] bytes = message.toUDPBuffers();
-        assertEquals(1, bytes.length);
-    }
-
+    
     @Test
     public void testAdditionalFields() throws Exception {
         GelfMessage message = new GelfMessage();
@@ -119,19 +82,48 @@ public class GelfMessageTest {
 
         assertThat("Message with invalid level defaults to info", (Long) object.get("level"), is(6L));
     }
-
+    
     @Test
-    public void concatByteArrayTest() {
-        GelfMessage message = new GelfMessage("Short", "Long", 1L, "WARNING");
+    public void testMutability() {
+        GelfMessage message = new GelfMessage("Short", "Long", new Date().getTime(), "1");
 
-        byte[] test1 = message.concatByteArray("ABC is ea".getBytes(), "sy as 123".getBytes());
-        assertThat("Bytes concatenates correctly", new String(test1), is("ABC is easy as 123"));
+        HashMap<String, Object> map = new HashMap<String, Object>();
+        map.put("id", "id");
+        map.put("x", "y");
 
-        byte[] test2 = message.concatByteArray(new byte[]{}, "sy as 123".getBytes());
-        assertThat("Empty bytes concatenates correctly", new String(test2), is("sy as 123"));
+        message.setAdditonalFields(map);
 
-        byte[] test3 = message.concatByteArray(new byte[]{}, new byte[]{});
-        assertThat("Two empty bytes concatenates correctly", test3, is(new byte[]{}));
+        message.addField("idz", "LOLCAT").addField("_id", "typos in my closet");
+
+        assertThat("Modifying original map doesn't modify message map", map.size(), is(2));
+        assertThat("Modifying original map ", message.getAdditonalFields().size(), is(4));
     }
 
+    @Test
+    public void testJavaImmutableMap() {
+        GelfMessage message = new GelfMessage("Short", "Long", new Date().getTime(), "1");
+
+        HashMap<String, Object> map = new HashMap<String, Object>();
+        map.put("id", "id");
+        map.put("x", "y");
+        Map<String, Object> additonalFields = Collections.unmodifiableMap(map);
+
+        message.setAdditonalFields(additonalFields);
+
+        message.addField("idz", "LOLCAT").addField("_id", "typos in my closet");
+
+        assertThat("If created from Immutable map, it should be possible to add fields", message.getAdditonalFields().size(), is(4));
+    }
+
+    @Test
+    public void testGuavaImmutableMaps() {
+        GelfMessage message = new GelfMessage("Short", "Long", new Date().getTime(), "1");
+
+        ImmutableMap<String, Object> build = ImmutableMap.<String, Object>builder().put("id", "id").put("x", "y").build();
+        message.setAdditonalFields(build);
+
+        message.addField("idz", "LOLCAT").addField("_id", "typos in my closet");
+
+        assertThat("Modifying original map doesn't modify message map", message.getAdditonalFields().size(), is(4));
+    }
 }

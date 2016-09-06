@@ -4,6 +4,9 @@ import org.apache.log4j.*;
 import org.apache.log4j.spi.ErrorHandler;
 import org.apache.log4j.spi.LoggingEvent;
 import org.graylog2.*;
+import org.graylog2.message.GelfMessage;
+import org.graylog2.sender.GelfSender;
+import org.graylog2.sender.GelfSenderResult;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,253 +24,166 @@ import static org.junit.Assert.*;
  */
 public class GelfAppenderTest {
 
-    private static final String CLASS_NAME = GelfAppenderTest.class.getCanonicalName();
-    private TestGelfSender gelfSender;
-    private GelfAppender gelfAppender;
-    private boolean rawExtended = false;
-
-    @Before
-    public void setUp() throws IOException {
-        gelfSender = new TestGelfSender("localhost");
-
-        gelfAppender = new GelfAppender() {
-
-            @Override
-            public GelfSender getGelfSender() {
-                return gelfSender;
-            }
-
-            @Override
-            public void append(LoggingEvent event) {
-                super.append(event);
-            }
-            
-            @Override
-            public Object transformExtendedField(String field, Object object) {
-                if (rawExtended) {
-                    return object;
-                }
-                else {
-                    return super.transformExtendedField(field, object);
-                }
-            }
-        };
-    }
+	private static final String CLASS_NAME = GelfAppenderTest.class.getCanonicalName();
+	private TestGelfSender gelfSender;
+	private GelfAppender gelfAppender;
+	private boolean rawExtended = false;
 
-    @After
-    public void tearDown() {
-        if (gelfAppender.isAddExtendedInformation()) {
-            NDC.clear();
-        }
-    }
+	@Before
+	public void setUp() throws IOException {
+		gelfSender = new TestGelfSender();
 
-    @Test
-    public void ensureHostnameForMessage() {
+		gelfAppender = new GelfAppender() {
 
-        LoggingEvent event = new LoggingEvent(CLASS_NAME, Category.getInstance(GelfAppenderTest.class), 123L, Level.INFO, "Das Auto",
-                new RuntimeException("Volkswagen"));
-        gelfAppender.append(event);
+			@Override
+			public GelfSender getGelfSender() {
+				return gelfSender;
+			}
 
-        assertThat("Message hostname", gelfSender.getLastMessage().getHost(), notNullValue());
+			@Override
+			public void append(LoggingEvent event) {
+				super.append(event);
+			}
 
-        gelfAppender.setOriginHost("example.com");
-        gelfAppender.append(event);
-        assertThat(gelfSender.getLastMessage().getHost(), is("example.com"));
-    }
+			@Override
+			public Object transformExtendedField(String field, Object object) {
+				if (rawExtended) {
+					return object;
+				} else {
+					return super.transformExtendedField(field, object);
+				}
+			}
+		};
+	}
 
-    @Test
-    public void handleNullInAppend() {
+	@After
+	public void tearDown() {
+		if (gelfAppender.isAddExtendedInformation()) {
+			NDC.clear();
+		}
+	}
 
-        LoggingEvent event = new LoggingEvent(CLASS_NAME, Category.getInstance(this.getClass()), 123L, Level.INFO, null, new RuntimeException("LOL"));
-        gelfAppender.append(event);
+	@Test
+	public void ensureHostnameForMessage() {
 
-        assertThat("Message short message", gelfSender.getLastMessage().getShortMessage(), notNullValue());
-        assertThat("Message full message", gelfSender.getLastMessage().getFullMessage(), notNullValue());
-    }
+		LoggingEvent event = new LoggingEvent(CLASS_NAME, Category.getInstance(GelfAppenderTest.class), 123L,
+				Level.INFO, "Das Auto", new RuntimeException("Volkswagen"));
+		gelfAppender.append(event);
 
-    @Test
-    public void handleMDC() {
+		assertThat("Message hostname", gelfSender.getLastMessage().getHost(), notNullValue());
 
-        gelfAppender.setAddExtendedInformation(true);
+		gelfAppender.setOriginHost("example.com");
+		gelfAppender.append(event);
+		assertThat(gelfSender.getLastMessage().getHost(), is("example.com"));
+	}
 
-        LoggingEvent event = new LoggingEvent(CLASS_NAME, Category.getInstance(this.getClass()), 123L, Level.INFO, "", new RuntimeException("LOL"));
-        MDC.put("foo", "bar");
+	@Test
+	public void handleNullInAppend() {
 
-        gelfAppender.append(event);
+		LoggingEvent event = new LoggingEvent(CLASS_NAME, Category.getInstance(this.getClass()), 123L, Level.INFO, null,
+				new RuntimeException("LOL"));
+		gelfAppender.append(event);
 
-        assertEquals("bar", gelfSender.getLastMessage().getAdditonalFields().get("foo"));
-        assertNull(gelfSender.getLastMessage().getAdditonalFields().get("non-existent"));
-    }
-    
-    @Test
-    public void handleMDCTransform() {
+		assertThat("Message short message", gelfSender.getLastMessage().getShortMessage(), notNullValue());
+		assertThat("Message full message", gelfSender.getLastMessage().getFullMessage(), notNullValue());
+	}
 
-        gelfAppender.setAddExtendedInformation(true);
-        
+	@Test
+	public void handleMDC() {
 
-        LoggingEvent event = new LoggingEvent(CLASS_NAME, Category.getInstance(this.getClass()), 123L, Level.INFO, "", new RuntimeException("LOL"));
-        MDC.put("foo", 200);
+		gelfAppender.setAddExtendedInformation(true);
 
-        gelfAppender.append(event);
+		LoggingEvent event = new LoggingEvent(CLASS_NAME, Category.getInstance(this.getClass()), 123L, Level.INFO, "",
+				new RuntimeException("LOL"));
+		MDC.put("foo", "bar");
 
-        assertEquals("200", gelfSender.getLastMessage().getAdditonalFields().get("foo"));
-        assertNull(gelfSender.getLastMessage().getAdditonalFields().get("non-existent"));
-        
-        
-        rawExtended = true;
-        event = new LoggingEvent(CLASS_NAME, Category.getInstance(this.getClass()), 123L, Level.INFO, "", new RuntimeException("LOL"));
-        gelfAppender.append(event);
+		gelfAppender.append(event);
 
-        assertEquals(new Integer(200), gelfSender.getLastMessage().getAdditonalFields().get("foo"));
-        assertNull(gelfSender.getLastMessage().getAdditonalFields().get("non-existent"));
-        
-    }
+		assertEquals("bar", gelfSender.getLastMessage().getAdditonalFields().get("foo"));
+		assertNull(gelfSender.getLastMessage().getAdditonalFields().get("non-existent"));
+	}
 
-    @Test
-    public void handleNDC() {
+	@Test
+	public void handleMDCTransform() {
 
-        gelfAppender.setAddExtendedInformation(true);
+		gelfAppender.setAddExtendedInformation(true);
 
-        LoggingEvent event = new LoggingEvent(CLASS_NAME, Category.getInstance(this.getClass()), 123L, Level.INFO, "", new RuntimeException("LOL"));
-        NDC.push("Foobar");
+		LoggingEvent event = new LoggingEvent(CLASS_NAME, Category.getInstance(this.getClass()), 123L, Level.INFO, "",
+				new RuntimeException("LOL"));
+		MDC.put("foo", 200);
 
-        gelfAppender.append(event);
+		gelfAppender.append(event);
 
-        assertEquals("Foobar", gelfSender.getLastMessage().getAdditonalFields().get("loggerNdc"));
-    }
+		assertEquals("200", gelfSender.getLastMessage().getAdditonalFields().get("foo"));
+		assertNull(gelfSender.getLastMessage().getAdditonalFields().get("non-existent"));
 
-    @Test
-    public void disableExtendedInformation() {
+		rawExtended = true;
+		event = new LoggingEvent(CLASS_NAME, Category.getInstance(this.getClass()), 123L, Level.INFO, "",
+				new RuntimeException("LOL"));
+		gelfAppender.append(event);
 
-        gelfAppender.setAddExtendedInformation(false);
+		assertEquals(new Integer(200), gelfSender.getLastMessage().getAdditonalFields().get("foo"));
+		assertNull(gelfSender.getLastMessage().getAdditonalFields().get("non-existent"));
 
-        LoggingEvent event = new LoggingEvent(CLASS_NAME, Category.getInstance(this.getClass()), 123L, Level.INFO, "", new RuntimeException("LOL"));
+	}
 
-        MDC.put("foo", "bar");
-        NDC.push("Foobar");
+	@Test
+	public void handleNDC() {
 
-        gelfAppender.append(event);
+		gelfAppender.setAddExtendedInformation(true);
 
-        assertNull(gelfSender.getLastMessage().getAdditonalFields().get("loggerNdc"));
-        assertNull(gelfSender.getLastMessage().getAdditonalFields().get("foo"));
-    }
+		LoggingEvent event = new LoggingEvent(CLASS_NAME, Category.getInstance(this.getClass()), 123L, Level.INFO, "",
+				new RuntimeException("LOL"));
+		NDC.push("Foobar");
 
-    @Test
-    public void checkExtendedInformation() throws UnknownHostException, SocketException {
+		gelfAppender.append(event);
 
-        gelfAppender.setAddExtendedInformation(true);
+		assertEquals("Foobar", gelfSender.getLastMessage().getAdditonalFields().get("loggerNdc"));
+	}
 
-        LoggingEvent event = new LoggingEvent(CLASS_NAME, Category.getInstance(GelfAppenderTest.class), 123L, Level.INFO, "Das Auto", new RuntimeException("LOL"));
+	@Test
+	public void disableExtendedInformation() {
 
-        gelfAppender.append(event);
+		gelfAppender.setAddExtendedInformation(false);
 
-        assertEquals(gelfSender.getLastMessage().getAdditonalFields().get("logger"), CLASS_NAME);
-    }
+		LoggingEvent event = new LoggingEvent(CLASS_NAME, Category.getInstance(this.getClass()), 123L, Level.INFO, "",
+				new RuntimeException("LOL"));
 
-    @Test
-    public void testTcpUdpUrls() {
+		MDC.put("foo", "bar");
+		NDC.push("Foobar");
 
-        GelfAppender testGelfAppender = new GelfAppender() {
+		gelfAppender.append(event);
 
-            @Override
-            protected GelfUDPSender getGelfUDPSender(String udpGraylogHost, int port) throws IOException {
-                return new MockGelfUDPSender(udpGraylogHost, port);
-            }
+		assertNull(gelfSender.getLastMessage().getAdditonalFields().get("loggerNdc"));
+		assertNull(gelfSender.getLastMessage().getAdditonalFields().get("foo"));
+	}
 
-            @Override
-            protected GelfTCPSender getGelfTCPSender(String tcpGraylogHost, int port) throws IOException {
-                return new MockGelfTCPSender(tcpGraylogHost, port);
-            }
+	@Test
+	public void checkExtendedInformation() throws UnknownHostException, SocketException {
 
-        };
+		gelfAppender.setAddExtendedInformation(true);
 
-        TestingEH testingEH = new TestingEH();
-        testGelfAppender.setErrorHandler(testingEH);
+		LoggingEvent event = new LoggingEvent(CLASS_NAME, Category.getInstance(GelfAppenderTest.class), 123L,
+				Level.INFO, "Das Auto", new RuntimeException("LOL"));
 
-        testGelfAppender.setGraylogHost("tcp:www.github.com");
-        testGelfAppender.activateOptions();
+		gelfAppender.append(event);
 
-        assertThat("No errors when using tcp: url", testingEH.getErrorMessage(), is(not("Unknown Graylog2 hostname:tcp:www.github.com")));
+		assertEquals(gelfSender.getLastMessage().getAdditonalFields().get("logger"), CLASS_NAME);
+	}
 
-        testGelfAppender.setGraylogHost("udp:www.github.com");
-        testGelfAppender.activateOptions();
+	private class TestGelfSender implements GelfSender {
+		private GelfMessage lastMessage;
 
-        assertThat("No errors when using udp: url", testingEH.getErrorMessage(), is(not("Unknown Graylog2 hostname:udp:www.github.com")));
+		public GelfSenderResult sendMessage(GelfMessage message) {
+			this.lastMessage = message;
+			return GelfSenderResult.OK;
+		}
 
-        testGelfAppender.setGraylogHost("www.github.com");
-        testGelfAppender.activateOptions();
+		public void close() {
+		}
 
-        assertThat("No errors when using udp: url", testingEH.getErrorMessage(), is(not("Unknown Graylog2 hostname:www.github.com")));
-    }
-
-    private class TestGelfSender extends GelfUDPSender {
-
-        private GelfMessage lastMessage;
-
-        public TestGelfSender(String host) throws IOException {
-            super(host);
-        }
-
-        @Override
-        public GelfSenderResult sendMessage(GelfMessage message) {
-            this.lastMessage = message;
-            return GelfSenderResult.OK;
-        }
-
-        public GelfMessage getLastMessage() {
-            return lastMessage;
-        }
-    }
-
-    private class TestingEH implements ErrorHandler {
-
-        private String errorMessage = "";
-
-        public void setLogger(Logger logger) {
-        }
-
-        public void error(String s, Exception e, int i) {
-            errorMessage = s;
-        }
-
-        public void error(String s) {
-            errorMessage = s;
-        }
-
-        public void error(String s, Exception e, int i, LoggingEvent loggingEvent) {
-            errorMessage = s;
-        }
-
-        public void setAppender(Appender appender) {
-        }
-
-        public void setBackupAppender(Appender appender) {
-        }
-
-        public void activateOptions() {
-        }
-
-        public String getErrorMessage() {
-            return errorMessage;
-        }
-    }
-
-    private class MockGelfUDPSender extends GelfUDPSender {
-
-        private MockGelfUDPSender(String host, int port) throws IOException {
-            if (host.contains("udp:")) {
-                throw new UnknownHostException("udp: found in host");
-            }
-        }
-
-    }
-
-    private class MockGelfTCPSender extends GelfTCPSender {
-
-        private MockGelfTCPSender(String host, int port) throws IOException {
-            if (host.contains("tcp:")) {
-                throw new UnknownHostException("tcp: found in host");
-            }
-        }
-    }
+		public GelfMessage getLastMessage() {
+			return lastMessage;
+		}
+	}
 }

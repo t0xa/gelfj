@@ -1,284 +1,180 @@
 package org.graylog2.logging;
 
-import org.graylog2.*;
-
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.net.InetAddress;
-import java.net.SocketException;
-import java.net.URISyntaxException;
-import java.net.UnknownHostException;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.text.MessageFormat;
 import java.util.HashMap;
-import java.util.IllegalFormatConversionException;
 import java.util.Map;
-import java.util.logging.*;
+import java.util.logging.ErrorManager;
+import java.util.logging.Filter;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.LogRecord;
 
-public class GelfHandler
-        extends Handler {
-    private static final int MAX_SHORT_MESSAGE_LENGTH = 250;
+import org.graylog2.host.HostConfiguration;
+import org.graylog2.message.GelfMessage;
+import org.graylog2.sender.GelfSender;
+import org.graylog2.sender.GelfSenderConfiguration;
+import org.graylog2.sender.GelfSenderConfigurationException;
+import org.graylog2.sender.GelfSenderFactory;
+import org.graylog2.sender.GelfSenderResult;
 
-    private String graylogHost;
-    private String amqpURI;
-    private String amqpExchangeName;
-    private String amqpRoutingKey;
-    private int amqpMaxRetries;
-    private String originHost;
-    private int graylogPort;
-    private String facility;
-    private GelfSender gelfSender;
-    private boolean extractStacktrace;
-    private Map<String, String> fields;
+public class GelfHandler extends Handler {
+	private static final int MAX_SHORT_MESSAGE_LENGTH = 250;
+	private HostConfiguration hostConfiguration;
+	private GelfSenderConfiguration senderConfiguration;
+	private Map<String, String> fields;
+	private GelfSender gelfSender;
+	private boolean closed;
 
-    public GelfHandler() {
-        final LogManager manager = LogManager.getLogManager();
-        final String prefix = getClass().getName();
+	public GelfHandler() {
+		JULProperties properties = new JULProperties(LogManager.getLogManager(), getClass().getName());
+		this.hostConfiguration = JULConfigurationManager.getHostConfiguration(properties);
+		this.senderConfiguration = JULConfigurationManager.getGelfSenderConfiguration(properties);
 
-        graylogHost = manager.getProperty(prefix + ".graylogHost");
-        final String port = manager.getProperty(prefix + ".graylogPort");
-        graylogPort = null == port ? 12201 : Integer.parseInt(port);
-        originHost = manager.getProperty(prefix + ".originHost");
-        extractStacktrace = "true".equalsIgnoreCase(manager.getProperty(prefix + ".extractStacktrace"));
-        int fieldNumber = 0;
-        fields = new HashMap<String, String>();
-        while (true) {
-            final String property = manager.getProperty(prefix + ".additionalField." + fieldNumber);
-            if (null == property) {
-                break;
-            }
-            final int index = property.indexOf('=');
-            if (-1 != index) {
-                fields.put(property.substring(0, index), property.substring(index + 1));
-            }
+		configure(properties);
+	}
 
-            fieldNumber++;
-        }
-        facility = manager.getProperty(prefix + ".facility");
+	public GelfHandler(GelfSenderConfiguration senderConfiguration) {
+		JULProperties properties = new JULProperties(LogManager.getLogManager(), getClass().getName());
+		this.hostConfiguration = JULConfigurationManager.getHostConfiguration(properties);
+		this.senderConfiguration = senderConfiguration;
 
-        amqpURI = manager.getProperty(prefix + ".amqpURI");
-        amqpExchangeName = manager.getProperty(prefix + ".amqpExchangeName");
-        amqpRoutingKey = manager.getProperty(prefix + ".amqpRoutingKey");
-        String maxRetries = manager.getProperty(prefix + ".amqpMaxRetries");
-        amqpMaxRetries = maxRetries == null ? 0 : Integer.valueOf(maxRetries);
+		configure(properties);
+	}
 
-        final String level = manager.getProperty(prefix + ".level");
-        if (null != level) {
-            setLevel(Level.parse(level.trim()));
-        } else {
-            setLevel(Level.INFO);
-        }
+	private void configure(JULProperties properties) {
+		int fieldNumber = 0;
+		fields = new HashMap<String, String>();
+		while (true) {
+			final String property = properties.getProperty("additionalField." + fieldNumber);
+			if (null == property) {
+				break;
+			}
+			final int index = property.indexOf('=');
+			if (-1 != index) {
+				fields.put(property.substring(0, index), property.substring(index + 1));
+			}
+			fieldNumber++;
+		}
 
-        final String filter = manager.getProperty(prefix + ".filter");
-        try {
-            if (null != filter) {
-                final Class clazz = ClassLoader.getSystemClassLoader().loadClass(filter);
-                setFilter((Filter) clazz.newInstance());
-            }
-        } catch (final Exception e) {
-            //ignore
-        }
-        //This only used for testing
-        final String testSender = manager.getProperty(prefix + ".graylogTestSenderClass");
-        try {
-            if (null != testSender) {
-                final Class clazz = ClassLoader.getSystemClassLoader().loadClass(testSender);
-                gelfSender = (GelfSender) clazz.newInstance();
-            }
-        } catch (final Exception e) {
-            //ignore
-        }
-    }
+		final String level = properties.getProperty("level");
+		if (null != level) {
+			setLevel(Level.parse(level.trim()));
+		} else {
+			setLevel(Level.INFO);
+		}
 
-    @Override
-    public synchronized void flush() {
-    }
+		boolean extractStacktrace = "true".equalsIgnoreCase(properties.getProperty("extractStacktrace"));
+		setFormatter(new SimpleFormatter(extractStacktrace));
 
+		final String filter = properties.getProperty("filter");
+		try {
+			if (null != filter) {
+				setFilter((Filter) getClass().getClassLoader().loadClass(filter).newInstance());
+			}
+		} catch (Exception ignoredException) {
+		}
+	}
 
-    private String getOriginHost() {
-        if (null == originHost) {
-            originHost = getLocalHostName();
-        }
-        return originHost;
-    }
+	@Override
+	public synchronized void flush() {
+	}
 
-    private String getLocalHostName() {
-        try {
-            return InetAddress.getLocalHost().getHostName();
-        } catch (final UnknownHostException uhe) {
-            reportError("Unknown local hostname", uhe, ErrorManager.GENERIC_FAILURE);
-        }
+	@Override
+	public void publish(LogRecord record) {
+		if (isLoggable(record)) {
+			send(record);
+		}
+	}
 
-        return null;
-    }
+	private synchronized void send(LogRecord record) {
+		if (!closed) {
+			try {
+				if (null == gelfSender) {
+					gelfSender = GelfSenderFactory.getInstance().createSender(senderConfiguration);
+				}
+				GelfSenderResult gelfSenderResult = gelfSender.sendMessage(makeMessage(record));
+				if (!GelfSenderResult.OK.equals(gelfSenderResult)) {
+					reportError("Error during sending GELF message. Error code: " + gelfSenderResult.getCode() + ".",
+							gelfSenderResult.getException(), ErrorManager.WRITE_FAILURE);
+				}
+			} catch (GelfSenderConfigurationException exception) {
+				reportError(exception.getMessage(), exception.getCauseException(), ErrorManager.WRITE_FAILURE);
+			} catch (Exception exception) {
+				reportError("Could not send GELF message", exception, ErrorManager.WRITE_FAILURE);
+			}
+		}
+	}
 
-    @Override
-    public synchronized void publish(final LogRecord record) {
-        if (!isLoggable(record)) {
-            return;
-        }
-        if (null == gelfSender) {
-            if (graylogHost == null && amqpURI == null) {
-                reportError("Graylog2 hostname and amqp uri are empty!", null, ErrorManager.WRITE_FAILURE);
-            } else if (graylogHost != null && amqpURI != null) {
-                reportError("Graylog2 hostname and amqp uri are both informed!", null, ErrorManager.WRITE_FAILURE);
-            } else {
-                try {
-                    if (graylogHost.startsWith("tcp:")) {
-                        String tcpGraylogHost = graylogHost.substring(4, graylogHost.length());
-                        gelfSender = new GelfTCPSender(tcpGraylogHost, graylogPort);
-                    } else if (graylogHost.startsWith("udp:")) {
-                        String udpGraylogHost = graylogHost.substring(4, graylogHost.length());
-                        gelfSender = new GelfUDPSender(udpGraylogHost, graylogPort);
-                    } else if (amqpURI != null) {
-                        gelfSender = new GelfAMQPSender(amqpURI, amqpExchangeName, amqpRoutingKey, amqpMaxRetries);
-                    } else {
-                        gelfSender = new GelfUDPSender(graylogHost, graylogPort);
-                    }
-                } catch (UnknownHostException e) {
-                    reportError("Unknown Graylog2 hostname:" + graylogHost, e, ErrorManager.WRITE_FAILURE);
-                } catch (SocketException e) {
-                    reportError("Socket exception", e, ErrorManager.WRITE_FAILURE);
-                } catch (IOException e) {
-                    reportError("IO exception", e, ErrorManager.WRITE_FAILURE);
-                } catch (URISyntaxException e) {
-                    reportError("AMQP uri exception", e, ErrorManager.WRITE_FAILURE);
-                } catch (NoSuchAlgorithmException e) {
-                    reportError("AMQP algorithm exception", e, ErrorManager.WRITE_FAILURE);
-                } catch (KeyManagementException e) {
-                    reportError("AMQP key exception", e, ErrorManager.WRITE_FAILURE);
-                }
-            }
-        }
-        if (null == gelfSender) {
-            reportError("Could not send GELF message", null, ErrorManager.WRITE_FAILURE);
-        } else {
-            GelfSenderResult gelfSenderResult = gelfSender.sendMessage(makeMessage(record));
-            if (!GelfSenderResult.OK.equals(gelfSenderResult)) {
-                reportError("Error during sending GELF message. Error code: " + gelfSenderResult.getCode() + ".", gelfSenderResult.getException(), ErrorManager.WRITE_FAILURE);
-            }
-        }
-    }
+	@Override
+	public synchronized void close() {
+		if (null != gelfSender) {
+			gelfSender.close();
+			gelfSender = null;
+		}
+		closed = true;
+	}
 
-    @Override
-    public void close() {
-        if (null != gelfSender) {
-            gelfSender.close();
-            gelfSender = null;
-        }
-    }
+	private GelfMessage makeMessage(LogRecord record) {
+		String message = getFormatter().format(record);
+		final String shortMessage = formatShortMessage(message);
+		final GelfMessage gelfMessage = new GelfMessage(shortMessage, message, record.getMillis(),
+				String.valueOf(levelToSyslogLevel(record.getLevel())));
+		gelfMessage.addField("SourceClassName", record.getSourceClassName());
+		gelfMessage.addField("SourceMethodName", record.getSourceMethodName());
+		if (null != hostConfiguration.getOriginHost()) {
+			gelfMessage.setHost(hostConfiguration.getOriginHost());
+		}
+		if (null != hostConfiguration.getFacility()) {
+			gelfMessage.setFacility(hostConfiguration.getFacility());
+		}
+		for (final Map.Entry<String, String> entry : fields.entrySet()) {
+			gelfMessage.addField(entry.getKey(), entry.getValue());
+		}
+		return gelfMessage;
+	}
 
-    private GelfMessage makeMessage(final LogRecord record) {
-        String message = record.getMessage();
-        Object[] parameters = record.getParameters();
+	private String formatShortMessage(String message) {
+		final String shortMessage;
+		if (message.length() > MAX_SHORT_MESSAGE_LENGTH) {
+			shortMessage = message.substring(0, MAX_SHORT_MESSAGE_LENGTH - 1);
+		} else {
+			shortMessage = message;
+		}
+		return shortMessage;
+	}
 
-        if (message == null) message = "";
-        if (parameters != null && parameters.length > 0) {
-            //by default, using {0}, {1}, etc. -> MessageFormat
-            message = MessageFormat.format(message, parameters);
+	private int levelToSyslogLevel(Level level) {
+		final int syslogLevel;
+		if (level.intValue() == Level.SEVERE.intValue()) {
+			syslogLevel = 3;
+		} else if (level.intValue() == Level.WARNING.intValue()) {
+			syslogLevel = 4;
+		} else if (level.intValue() == Level.INFO.intValue()) {
+			syslogLevel = 6;
+		} else {
+			syslogLevel = 7;
+		}
+		return syslogLevel;
+	}
 
-            if (message.equals(record.getMessage())) {
-                //if the text is the same, assuming this is String.format type log (%s, %d, etc.)
-                try {
-                    message = String.format(message, parameters);
-                } catch (IllegalFormatConversionException e) {
-                    //leaving message as it is to avoid compatibility problems
-                    message = record.getMessage();
-                } catch (NullPointerException e) {
-                    //ignore
-                }
-            }
-        }
+	public synchronized void setGelfSender(GelfSender gelfSender) {
+		this.gelfSender = gelfSender;
+	}
 
-        final String shortMessage;
-        if (message.length() > MAX_SHORT_MESSAGE_LENGTH) {
-            shortMessage = message.substring(0, MAX_SHORT_MESSAGE_LENGTH - 1);
-        } else {
-            shortMessage = message;
-        }
+	public void setAdditionalField(String entry) {
+		if (entry == null)
+			return;
+		final int index = entry.indexOf('=');
+		if (-1 != index) {
+			String key = entry.substring(0, index);
+			String val = entry.substring(index + 1);
+			if (key.equals(""))
+				return;
+			fields.put(key, val);
+		}
+	}
 
-        if (extractStacktrace) {
-            final Throwable thrown = record.getThrown();
-            if (null != thrown) {
-                final StringWriter sw = new StringWriter();
-                thrown.printStackTrace(new PrintWriter(sw));
-                message += "\n\r" + sw.toString();
-            }
-        }
-
-        final GelfMessage gelfMessage =
-                new GelfMessage(shortMessage,
-                        message,
-                        record.getMillis(),
-                        String.valueOf(levelToSyslogLevel(record.getLevel())));
-        gelfMessage.addField("SourceClassName", record.getSourceClassName());
-        gelfMessage.addField("SourceMethodName", record.getSourceMethodName());
-
-        if (null != getOriginHost()) {
-            gelfMessage.setHost(getOriginHost());
-        }
-
-        if (null != facility) {
-            gelfMessage.setFacility(facility);
-        }
-
-        if (null != fields) {
-            for (final Map.Entry<String, String> entry : fields.entrySet()) {
-                gelfMessage.addField(entry.getKey(), entry.getValue());
-            }
-        }
-
-        return gelfMessage;
-    }
-
-    private int levelToSyslogLevel(final Level level) {
-        final int syslogLevel;
-        if (level.intValue() == Level.SEVERE.intValue()) {
-            syslogLevel = 3;
-        } else if (level.intValue() == Level.WARNING.intValue()) {
-            syslogLevel = 4;
-        } else if (level.intValue() == Level.INFO.intValue()) {
-            syslogLevel = 6;
-        } else {
-            syslogLevel = 7;
-        }
-        return syslogLevel;
-    }
-
-    public void setExtractStacktrace(boolean extractStacktrace) {
-        this.extractStacktrace = extractStacktrace;
-    }
-
-    public void setGraylogPort(int graylogPort) {
-        this.graylogPort = graylogPort;
-    }
-
-    public void setOriginHost(String originHost) {
-        this.originHost = originHost;
-    }
-
-    public void setGraylogHost(String graylogHost) {
-        this.graylogHost = graylogHost;
-    }
-
-    public void setFacility(String facility) {
-        this.facility = facility;
-    }
-
-    public void setAdditionalField(String entry) {
-        if (entry == null) return;
-        final int index = entry.indexOf('=');
-        if (-1 != index) {
-            String key = entry.substring(0, index);
-            String val = entry.substring(index + 1);
-            if (key.equals("")) return;
-            fields.put(key, val);
-        }
-    }
-
-    public Map<String, String> getFields() {
-        return fields;
-    }
+	public Map<String, String> getFields() {
+		return fields;
+	}
 }

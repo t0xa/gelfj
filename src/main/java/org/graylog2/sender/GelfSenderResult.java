@@ -1,4 +1,4 @@
-package org.graylog2;
+package org.graylog2.sender;
 
 public class GelfSenderResult {
 

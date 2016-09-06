@@ -1,21 +1,18 @@
 package org.graylog2.log;
 
-import junit.framework.TestCase;
-import org.apache.log4j.Category;
-import org.apache.log4j.Level;
-import org.apache.log4j.spi.LoggingEvent;
-import org.graylog2.GelfMessage;
-import org.graylog2.GelfSender;
-import org.graylog2.GelfSenderResult;
-import org.graylog2.GelfUDPSender;
-import org.junit.Before;
-import org.junit.Test;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import org.apache.log4j.Category;
+import org.apache.log4j.Level;
+import org.apache.log4j.spi.LoggingEvent;
+import org.graylog2.message.GelfMessage;
+import org.graylog2.sender.GelfSender;
+import org.graylog2.sender.GelfSenderResult;
+import org.junit.Before;
+import org.junit.Test;
 
 public class GelfJsonAppenderTest {
 
@@ -25,7 +22,7 @@ public class GelfJsonAppenderTest {
 
     @Before
     public void setUp() throws IOException {
-        gelfSender = new TestGelfSender("localhost");
+        gelfSender = new TestGelfSender();
 
         gelfAppender = new GelfJsonAppender() {
 
@@ -67,18 +64,18 @@ public class GelfJsonAppenderTest {
         assertThat("Full message is the same", (String) gelfSender.getLastMessage().getFullMessage(), is(message));
     }
 
-    private class TestGelfSender extends GelfUDPSender {
-
+    private class TestGelfSender implements GelfSender {
         private GelfMessage lastMessage;
 
-        public TestGelfSender(String host) throws IOException {
-            super(host);
+        public TestGelfSender() throws IOException {
         }
 
-        @Override
         public GelfSenderResult sendMessage(GelfMessage message) {
             this.lastMessage = message;
             return GelfSenderResult.OK;
+        }
+        
+        public void close() {
         }
 
         public GelfMessage getLastMessage() {

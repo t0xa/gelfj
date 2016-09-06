@@ -1,11 +1,11 @@
-package org.graylog2;
+package org.graylog2.log;
 
 import org.apache.log4j.Layout;
 import org.apache.log4j.Level;
 import org.apache.log4j.spi.LocationInfo;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.ThrowableInformation;
-import org.graylog2.log.Log4jVersionChecker;
+import org.graylog2.message.GelfMessage;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
