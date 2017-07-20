@@ -18,7 +18,7 @@ public class GelfConsoleAppender extends ConsoleAppender implements GelfMessageP
     private boolean extractStacktrace;
     private boolean addExtendedInformation;
     private boolean includeLocation = true;
-    private Map<String, String> fields;
+    private Map<String, Object> fields;
 
     // parent overrides.
 
@@ -37,7 +37,7 @@ public class GelfConsoleAppender extends ConsoleAppender implements GelfMessageP
     // GelfMessageProvider interface.
 
     public void setAdditionalFields(String additionalFields) {
-        fields = (Map<String, String>) JSONValue.parse(additionalFields.replaceAll("'", "\""));
+        fields = (Map<String, Object>) JSONValue.parse(additionalFields.replaceAll("'", "\""));
     }
 
     public boolean isExtractStacktrace() {
@@ -76,9 +76,9 @@ public class GelfConsoleAppender extends ConsoleAppender implements GelfMessageP
         return null;
     }
 
-    public Map<String, String> getFields() {
+    public Map<String, Object> getFields() {
         if (fields == null) {
-            fields = new HashMap<String, String>();
+            fields = new HashMap<String, Object>();
         }
         return Collections.unmodifiableMap(fields);
     }

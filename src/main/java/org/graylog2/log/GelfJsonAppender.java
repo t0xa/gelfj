@@ -23,7 +23,7 @@ public class GelfJsonAppender extends GelfAppender {
     GelfMessage gelfMessage = GelfMessageFactory.makeMessage(layout, event, this);
 
     @SuppressWarnings("unchecked")
-    Map<String, String> fields = (Map<String, String>) JSONValue.parse(event.getMessage().toString());
+    Map<String, Object> fields = (Map<String, Object>) JSONValue.parse(event.getMessage().toString());
 
     if (fields != null) {
       for (String key : fields.keySet()) {
