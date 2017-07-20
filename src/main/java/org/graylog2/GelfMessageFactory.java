@@ -6,6 +6,7 @@ import org.apache.log4j.spi.LocationInfo;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.ThrowableInformation;
 import org.graylog2.log.Log4jVersionChecker;
+import org.json.simple.JSONArray;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -67,10 +68,10 @@ public class GelfMessageFactory {
             gelfMessage.setFacility(provider.getFacility());
         }
 
-        Map<String, String> fields = provider.getFields();
-        for (Map.Entry<String, String> entry : fields.entrySet()) {
+        Map<String, Object> fields = provider.getFields();
+        for (Map.Entry<String, Object> entry : fields.entrySet()) {
             if (entry.getKey().equals(ORIGIN_HOST_KEY) && gelfMessage.getHost() == null) {
-                gelfMessage.setHost(fields.get(ORIGIN_HOST_KEY));
+                gelfMessage.setHost((String) fields.get(ORIGIN_HOST_KEY));
             } else {
                 gelfMessage.addField(entry.getKey(), entry.getValue());
             }

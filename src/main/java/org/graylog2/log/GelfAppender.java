@@ -3,10 +3,6 @@ package org.graylog2.log;
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.spi.ErrorCode;
 import org.apache.log4j.spi.LoggingEvent;
-import org.graylog2.GelfMessage;
-import org.graylog2.GelfMessageFactory;
-import org.graylog2.GelfMessageProvider;
-import org.graylog2.GelfSender;
 import org.json.simple.JSONValue;
 
 import java.io.IOException;
@@ -41,7 +37,7 @@ public class GelfAppender extends AppenderSkeleton implements GelfMessageProvide
     private boolean extractStacktrace;
     private boolean addExtendedInformation;
     private boolean includeLocation = true;
-    private Map<String, String> fields;
+    private Map<String, Object> fields;
 
     public GelfAppender() {
         super();
@@ -49,7 +45,7 @@ public class GelfAppender extends AppenderSkeleton implements GelfMessageProvide
 
     @SuppressWarnings("unchecked")
     public void setAdditionalFields(String additionalFields) {
-        fields = (Map<String, String>) JSONValue.parse(additionalFields.replaceAll("'", "\""));
+        fields = (Map<String, Object>) JSONValue.parse(additionalFields.replaceAll("'", "\""));
     }
 
     public int getGraylogPort() {
@@ -154,9 +150,9 @@ public class GelfAppender extends AppenderSkeleton implements GelfMessageProvide
         this.includeLocation = includeLocation;
     }
 
-    public Map<String, String> getFields() {
+    public Map<String, Object> getFields() {
         if (fields == null) {
-            fields = new HashMap<String, String>();
+            fields = new HashMap<String, Object>();
         }
         return Collections.unmodifiableMap(fields);
     }

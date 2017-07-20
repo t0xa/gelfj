@@ -6,7 +6,7 @@ public interface GelfMessageProvider {
     public boolean isExtractStacktrace();
     public String getOriginHost();
     public String getFacility();
-    public Map<String, String> getFields();
+    public Map<String, Object> getFields();
     public boolean isAddExtendedInformation();
     public boolean isIncludeLocation();
     public Object transformExtendedField(String field, Object object);
