@@ -11,7 +11,7 @@ Add the following dependency section to your pom.xml:
       <dependency>
         <groupId>org.graylog2</groupId>
         <artifactId>gelfj</artifactId>
-        <version>1.1.17</version>
+        <version>1.1.16</version>
         <scope>compile</scope>
       </dependency>
       ...
