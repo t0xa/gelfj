@@ -224,8 +224,13 @@ public class GelfMessage {
         this.fullMessage = fullMessage;
     }
 
-    public String getTimestamp() {
-        return new BigDecimal(javaTimestamp).divide(TIME_DIVISOR).toPlainString();
+    /**
+     * http://docs.graylog.org/en/2.4/pages/gelf.html#gelf-payload-specification
+     *
+     * @return Seconds since UNIX epoch with decimal places for milliseconds;
+     **/
+    public BigDecimal getTimestamp() {
+        return new BigDecimal(javaTimestamp).divide(TIME_DIVISOR);
     }
 
     public Long getJavaTimestamp() {

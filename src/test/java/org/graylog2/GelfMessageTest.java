@@ -1,5 +1,6 @@
 package org.graylog2;
 
+import junit.framework.Assert;
 import org.json.simple.JSONValue;
 import org.json.simple.JSONObject;
 import org.junit.Test;
@@ -134,4 +135,14 @@ public class GelfMessageTest {
         assertThat("Two empty bytes concatenates correctly", test3, is(new byte[]{}));
     }
 
+    @Test
+    public void numericTimestampTest() {
+        GelfMessage message = new GelfMessage("Short", "Long", 1L, "WARNING");
+        JSONObject object = (JSONObject) JSONValue.parse(message.toJson());
+        assertThat((Double) object.get("timestamp"), is(0.001d));
+
+        GelfMessage message2 = new GelfMessage("Short", "Long", 1515403544687L, "WARNING");
+        JSONObject object2 = (JSONObject) JSONValue.parse(message2.toJson());
+        assertThat( (Double) object2.get("timestamp"), is(1515403544.687d));
+    }
 }
