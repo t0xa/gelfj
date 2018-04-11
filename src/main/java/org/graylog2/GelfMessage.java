@@ -1,5 +1,6 @@
 package org.graylog2;
 
+import org.graylog2.constants.TCPDelimiter;
 import org.json.simple.JSONValue;
 
 import java.io.ByteArrayOutputStream;
@@ -104,14 +105,14 @@ public class GelfMessage {
         return datagrams;
     }
 
-    public ByteBuffer toTCPBuffer() {
+    public ByteBuffer toTCPBuffer(TCPDelimiter delimiter) {
         byte[] messageBytes;
         try {
             // Do not use GZIP, as the headers will contain \0 bytes
             // graylog2-server uses \0 as a delimiter for TCP frames
             // see: https://github.com/Graylog2/graylog2-server/issues/127
             String json = toJson() ;
-            json += '\0';
+            json += delimiter.toString();
             messageBytes = json.getBytes("UTF-8");
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException("No UTF-8 support available.", e);
