@@ -1,6 +1,14 @@
 GELFJ - A GELF Appender for Log4j and a GELF Handler for JDK Logging
 ====================================================================
 
+Local use
+----------
+
+To use the 1.1.17-SNAPSHOT locally:
+
+1. Run `mvn install` on this repository
+2. Modify your `build.sbt` to add the local Maven resolver, `resolvers += Resolver.mavenLocal`
+
 Downloading
 -----------
 
