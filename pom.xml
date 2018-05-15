@@ -171,14 +171,18 @@
         <url>https://travis-ci.org/t0xa/gelfj</url>
     </ciManagement>
 
-    <distributionManagement>
-        <repository>
-            <id>sonatype-nexus-staging</id>
-            <name>Nexus Staging Repository</name>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-    </distributionManagement>
-
+<distributionManagement>
+    <repository>
+      <id>nexus</id>
+      <name>Releases</name>
+      <url>http://192.168.1.4:8081/repository/affectv/</url>
+    </repository>
+    <snapshotRepository>
+      <id>nexus</id>
+      <name>Snapshot</name>
+      <url>http://192.168.1.4:8081/repository/affectv/</url>
+    </snapshotRepository>
+</distributionManagement>
     <profiles>
         <profile>
             <id>release-sign-artifacts</id>
@@ -188,38 +192,38 @@
                     <value>true</value>
                 </property>
             </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.1</version>
-                        <executions>
-                            <execution>
-                                <id>sign-artifacts</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <keyname>anton@tds.lv</keyname>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.sonatype.plugins</groupId>
-                        <artifactId>nexus-staging-maven-plugin</artifactId>
-                        <version>1.6.3</version>
-                        <extensions>true</extensions>
-                        <configuration>
-                            <serverId>ossrh</serverId>
-                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
+            <!-- <build> -->
+            <!--     <plugins> -->
+            <!--         <plugin> -->
+            <!--             <groupId>org.apache.maven.plugins</groupId> -->
+            <!--             <artifactId>maven-gpg-plugin</artifactId> -->
+            <!--             <version>1.1</version> -->
+            <!--             <executions> -->
+            <!--                 <execution> -->
+            <!--                     <id>sign-artifacts</id> -->
+            <!--                     <phase>verify</phase> -->
+            <!--                     <goals> -->
+            <!--                         <goal>sign</goal> -->
+            <!--                     </goals> -->
+            <!--                 </execution> -->
+            <!--             </executions> -->
+            <!--             <configuration> -->
+            <!--                 <keyname>anton@tds.lv</keyname> -->
+            <!--             </configuration> -->
+            <!--         </plugin> -->
+            <!--         <plugin> -->
+            <!--             <groupId>org.sonatype.plugins</groupId> -->
+            <!--             <artifactId>nexus-staging-maven-plugin</artifactId> -->
+            <!--             <version>1.6.3</version> -->
+            <!--             <extensions>true</extensions> -->
+            <!--             <configuration> -->
+            <!--                 <serverId>ossrh</serverId> -->
+            <!--                 <nexusUrl>https://oss.sonatype.org/</nexusUrl> -->
+            <!--                 <autoReleaseAfterClose>true</autoReleaseAfterClose> -->
+            <!--             </configuration> -->
+            <!--         </plugin> -->
+            <!--     </plugins> -->
+            <!-- </build> -->
         </profile>
     </profiles>
 
