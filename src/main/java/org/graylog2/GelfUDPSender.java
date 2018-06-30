@@ -14,7 +14,7 @@ public class GelfUDPSender implements GelfSender {
 	private Date lastChannelRefresh = null;
 
 	private static final int MAX_RETRIES = 5;
-	private static final int REFRESH_CHANNEL_SECONDS = 30;
+	private static final int REFRESH_CHANNEL_SECONDS = 300;
 
     public GelfUDPSender() {
     }
