@@ -2,11 +2,11 @@ package org.graylog2;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.*;
+import java.net.Socket;
 
 public class GelfTCPSender implements GelfSender {
 	private boolean shutdown = false;
-	private InetAddress host;
+	private String host;
 	private int port;
 	private Socket socket;
     private OutputStream os;
@@ -15,7 +15,7 @@ public class GelfTCPSender implements GelfSender {
     }
 
 	public GelfTCPSender(String host, int port) throws IOException {
-		this.host = InetAddress.getByName(host);
+		this.host = host;
 		this.port = port;
 		this.socket = new Socket(host, port);
         this.os = socket.getOutputStream();

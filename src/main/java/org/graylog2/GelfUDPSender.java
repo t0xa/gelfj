@@ -1,18 +1,20 @@
 package org.graylog2;
 
 import java.io.IOException;
-import java.net.*;
+import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.channels.ClosedChannelException;
 import java.nio.channels.DatagramChannel;
+import java.util.Date;
 
 public class GelfUDPSender implements GelfSender {
 
-	private InetAddress host;
+	private String host;
 	private int port;
 	private DatagramChannel channel;
+	private Date lastChannelRefresh = null;
 
 	private static final int MAX_RETRIES = 5;
+	private static final int REFRESH_CHANNEL_SECONDS = 30;
 
     public GelfUDPSender() {
     }
@@ -22,7 +24,7 @@ public class GelfUDPSender implements GelfSender {
 	}
 
 	public GelfUDPSender(String host, int port) throws IOException {
-		this.host = InetAddress.getByName(host);
+		this.host = host;
 		this.port = port;
 		setChannel(initiateChannel());
 	}
@@ -49,6 +51,10 @@ public class GelfUDPSender implements GelfSender {
 
 			try {
 
+				if (isChannelOld() ) {
+					getChannel().close();
+				}
+				
 				if (!getChannel().isOpen()) {
 					setChannel(initiateChannel());
 				}
@@ -81,5 +87,17 @@ public class GelfUDPSender implements GelfSender {
 
     public void setChannel(DatagramChannel channel) {
         this.channel = channel;
+        this.lastChannelRefresh = new Date();
+    }
+    
+    private boolean isChannelOld() {
+    	if (this.lastChannelRefresh == null)
+    		return true;
+    	
+    	Date now = new Date();
+    	if ((now.getTime() - REFRESH_CHANNEL_SECONDS * 1000) > this.lastChannelRefresh.getTime())
+    		return true;
+    	
+    	return false;
     }
 }
