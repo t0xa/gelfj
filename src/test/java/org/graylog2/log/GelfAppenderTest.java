@@ -175,8 +175,8 @@ public class GelfAppenderTest {
             }
 
             @Override
-            protected GelfTCPSender getGelfTCPSender(String tcpGraylogHost, int port) throws IOException {
-                return new MockGelfTCPSender(tcpGraylogHost, port);
+            protected GelfTCPSender getGelfTCPSender(String tcpGraylogHost, int port, boolean tcpKeepalive) throws IOException {
+                return new MockGelfTCPSender(tcpGraylogHost, port, tcpKeepalive);
             }
 
         };
@@ -264,7 +264,7 @@ public class GelfAppenderTest {
 
     private class MockGelfTCPSender extends GelfTCPSender {
 
-        private MockGelfTCPSender(String host, int port) throws IOException {
+        private MockGelfTCPSender(String host, int port, boolean keepalive) throws IOException {
             if (host.contains("tcp:")) {
                 throw new UnknownHostException("tcp: found in host");
             }

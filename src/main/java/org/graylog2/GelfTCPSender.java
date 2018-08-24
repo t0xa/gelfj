@@ -8,17 +8,29 @@ public class GelfTCPSender implements GelfSender {
 	private boolean shutdown = false;
 	private InetAddress host;
 	private int port;
+	private boolean keepalive;
 	private Socket socket;
     private OutputStream os;
 
     public GelfTCPSender() {
     }
 
-	public GelfTCPSender(String host, int port) throws IOException {
+	public GelfTCPSender(String host, int port, boolean keepalive) throws IOException {
 		this.host = InetAddress.getByName(host);
 		this.port = port;
-		this.socket = new Socket(host, port);
+		this.keepalive = keepalive;
+		initConnection();
+	}
+	
+	private void initConnection() throws IOException {
+		this.socket = createSocket();
         this.os = socket.getOutputStream();
+	}
+
+	private Socket createSocket() throws UnknownHostException, IOException {
+		Socket socket = new Socket(host, port);
+		socket.setKeepAlive(keepalive);
+		return socket;
 	}
 
 	public GelfSenderResult sendMessage(GelfMessage message) {
@@ -28,11 +40,9 @@ public class GelfTCPSender implements GelfSender {
 
 		try {
 			// reconnect if necessary
-			if (socket == null || os == null) {
-				socket = new Socket(host, port);
-                os = socket.getOutputStream();
+			if (!isConnectionInitialized()) {
+				initConnection();
 			}
-
             os.write(message.toTCPBuffer().array());
 
 			return GelfSenderResult.OK;
@@ -41,6 +51,10 @@ public class GelfTCPSender implements GelfSender {
 			socket = null;
 			return new GelfSenderResult(GelfSenderResult.ERROR_CODE, e);
 		}
+	}
+
+	private boolean isConnectionInitialized() {
+		return socket != null && os != null;
 	}
 
 	public void close() {

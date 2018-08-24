@@ -27,6 +27,7 @@ public class GelfHandler
     private String amqpRoutingKey;
     private int amqpMaxRetries;
     private String originHost;
+    private boolean tcpKeepalive;
     private int graylogPort;
     private String facility;
     private GelfSender gelfSender;
@@ -40,6 +41,7 @@ public class GelfHandler
         graylogHost = manager.getProperty(prefix + ".graylogHost");
         final String port = manager.getProperty(prefix + ".graylogPort");
         graylogPort = null == port ? 12201 : Integer.parseInt(port);
+        tcpKeepalive = "true".equalsIgnoreCase(manager.getProperty(prefix + ".tcpKeepalive"));
         originHost = manager.getProperty(prefix + ".originHost");
         extractStacktrace = "true".equalsIgnoreCase(manager.getProperty(prefix + ".extractStacktrace"));
         int fieldNumber = 0;
@@ -128,7 +130,7 @@ public class GelfHandler
                 try {
                     if (graylogHost.startsWith("tcp:")) {
                         String tcpGraylogHost = graylogHost.substring(4, graylogHost.length());
-                        gelfSender = new GelfTCPSender(tcpGraylogHost, graylogPort);
+                        gelfSender = new GelfTCPSender(tcpGraylogHost, graylogPort, tcpKeepalive);
                     } else if (graylogHost.startsWith("udp:")) {
                         String udpGraylogHost = graylogHost.substring(4, graylogHost.length());
                         gelfSender = new GelfUDPSender(udpGraylogHost, graylogPort);
