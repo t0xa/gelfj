@@ -9,6 +9,30 @@ To use the 1.1.17-SNAPSHOT locally:
 1. Run `mvn install` on this repository
 2. Modify your `build.sbt` to add the local Maven resolver, `resolvers += Resolver.mavenLocal`
 
+Notes
+-----
+
+You will need _Java 8_ and Maven. To install it on Mac, 
+
+```bash
+brew tap caskroom/versions
+brew cask install java8
+brew install maven
+```
+
+To switch between Java versions, you could add these aliases to your `.bashrc` or `.zshrc` files
+
+```bash
+alias j8="export JAVA_HOME=`/usr/libexec/java_home -v 1.8`"
+alias j11="export JAVA_HOME=`/usr/libexec/java_home -v 11.0.1`"
+```
+
+Then before running any Java related command you can switch among them. You can set the default with
+
+```
+export JAVA_HOME=`/usr/libexec/java_home -v 1.8`
+```
+
 Downloading
 -----------
 
